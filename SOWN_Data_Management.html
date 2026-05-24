@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOWN Data Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #3d7a2b; --green-light: #eaf4df; --green-mid: #a8d072; --green-dark: #2a5a1e;
+  --red-light: #FAECE7; --red-dark: #993C1D;
+  --success-light: #eaf4df; --success-dark: #2a5a1e;
+  --amber-light: #fdf6e9; --amber-dark: #7A5C00; --amber-border: #d4b87a;
+  --bg: #f4efe6; --surface: #fdfaf5; --surface2: #f0e9dc;
+  --border: rgba(61,122,43,0.15); --border2: rgba(61,122,43,0.25);
+  --text: #1e2d16; --text2: #5a7048; --text3: #9aab88;
+  --radius: 10px; --radius-lg: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18; --surface: #242422; --surface2: #2e2e2c;
+    --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
+    --text: #f0f0ec; --text2: #a0a09c; --text3: #606060;
+    --green-light: #0a3026; --red-light: #3a1810; --success-light: #1a2e0a;
+    --amber-light: #2a2010; --amber-border: #6a5010;
+  }
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+/* ── LOGIN ── */
+#loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.login-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem 2rem; width: 100%; max-width: 380px; }
+.login-logo { width: 52px; height: 52px; background: var(--green); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+.login-logo svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.login-box h2 { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.login-box .sub { text-align: center; font-size: 13px; color: var(--text2); margin-bottom: 1.75rem; }
+.login-error { background: var(--red-light); color: var(--red-dark); border-radius: var(--radius); padding: 9px 12px; font-size: 13px; margin-bottom: 1rem; text-align: center; display: none; }
+.login-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 1rem; }
+.login-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+.login-group input { padding: 10px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--surface2); color: var(--text); font-size: 15px; font-family: inherit; }
+.login-group input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.15); }
+.login-btn { width: 100%; padding: 11px; background: #3d7a2b; color: #fff; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 4px; letter-spacing: 1px; }
+.login-btn:hover { background: var(--green-dark); }
+
+/* ── APP ── */
+#appScreen { display: none; }
+.app { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.75rem; }
+.header-icon { width: 42px; height: 42px; background: var(--green); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.header-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.header h1 { font-size: 20px; font-weight: 600; }
+.header p { font-size: 13px; color: var(--text2); margin-top: 1px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 4px; }
+.tab { flex: 1; padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text2); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; }
+.tab svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.tab:hover:not(.active) { color: var(--text); }
+.panel { display: none; }
+.panel.active { display: block; }
+.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.api-notice { background: var(--amber-light); border: 0.5px solid var(--amber-border); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--amber-dark); margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px; }
+.api-notice svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+.api-key-row { display: flex; gap: 8px; margin-top: 10px; }
+.api-key-row input { flex: 1; padding: 7px 10px; border: 0.5px solid var(--amber-border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; font-family: monospace; }
+.api-key-row input:focus { outline: none; border-color: var(--green); }
+.api-key-row button { padding: 7px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.steps { display: flex; align-items: center; margin-bottom: 1.25rem; }
+.step { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text3); flex-shrink: 0; }
+.step.active { color: var(--text); font-weight: 500; }
+.step.done { color: var(--green); }
+.step-num { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.step.done .step-num { background: var(--green); border-color: var(--green); color: #fff; }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 10px; }
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.upload-zone { border: 1.5px dashed var(--border2); border-radius: var(--radius-lg); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--surface2); user-select: none; }
+.upload-zone:hover { border-color: var(--green); background: var(--green-light); }
+.upload-zone svg { width: 32px; height: 32px; stroke: var(--green); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 10px; }
+.upload-zone strong { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.upload-zone span { font-size: 13px; color: var(--text2); }
+.preview-img { width: 100%; max-height: 260px; object-fit: contain; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--surface2); margin-bottom: 0.75rem; }
+.status { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1rem; display: none; align-items: center; gap: 9px; }
+.status.info { background: var(--green-light); color: var(--green-dark); display: flex; }
+.status.error { background: var(--red-light); color: var(--red-dark); display: flex; }
+.status.success { background: var(--success-light); color: var(--success-dark); display: flex; }
+.status svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.spinner { width: 15px; height: 15px; border: 2px solid var(--green-mid); border-top-color: var(--green-dark); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.85rem; }
+.review-table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+.review-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+.review-table th { text-align: left; padding: 8px; border-bottom: 1px solid var(--border2); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; background: var(--surface2); }
+.review-table td { padding: 5px 4px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+.review-table tr:last-child td { border-bottom: none; }
+.review-table tr:hover td { background: var(--surface2); }
+.review-table input { width: 100%; padding: 6px 8px; border: 0.5px solid transparent; border-radius: 6px; background: transparent; color: var(--text); font-size: 13px; font-family: inherit; transition: all 0.15s; min-width: 80px; }
+.review-table input:hover { border-color: var(--border2); background: var(--surface); }
+.review-table input:focus { outline: none; border-color: var(--green); background: var(--surface); box-shadow: 0 0 0 2px rgba(29,158,117,0.12); }
+.review-table input.narrow { min-width: 60px; }
+.row-num { font-size: 11px; color: var(--text3); font-weight: 600; padding: 0 8px; text-align: center; width: 28px; }
+.del-btn { padding: 4px 8px; background: transparent; border: none; cursor: pointer; color: var(--text3); border-radius: 6px; transition: all 0.15s; }
+.del-btn:hover { background: var(--red-light); color: var(--red-dark); }
+.del-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.row-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 0.75rem; flex-wrap: wrap; }
+.row-count { font-size: 13px; color: var(--text2); }
+.row-count strong { color: var(--text); }
+.btn { padding: 9px 18px; border-radius: var(--radius); border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+.btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { background: var(--green-dark); }
+.btn-primary:disabled { background: var(--green-mid); cursor: not-allowed; }
+.btn-secondary { background: var(--surface); color: var(--text); border: 0.5px solid var(--border2); }
+.btn-secondary:hover { background: var(--surface2); }
+.btn-add { background: var(--green-light); color: var(--green-dark); border: 0.5px solid var(--green-mid); }
+.btn-add:hover { background: var(--green-mid); }
+.action-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.stat { background: var(--surface2); border-radius: var(--radius); padding: 0.85rem 1rem; border: 0.5px solid var(--border); }
+.stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.stat-value { font-size: 24px; font-weight: 600; color: var(--text); margin-top: 3px; }
+.search-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+.search-row input { flex: 1; padding: 9px 11px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--surface2); color: var(--text); font-size: 14px; font-family: inherit; }
+.search-row input:focus { outline: none; border-color: var(--green); }
+.records-table-wrap { overflow-x: auto; }
+.records-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.records-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.records-table td { padding: 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+.records-table tr:last-child td { border-bottom: none; }
+.records-table tbody tr:hover td { background: var(--surface2); }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+.badge-green { background: var(--success-light); color: var(--success-dark); }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--text2); }
+.empty-state svg { width: 40px; height: 40px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 0.75rem; display: block; margin-left: auto; margin-right: auto; }
+.camera-feed { width: 100%; border-radius: var(--radius); background: #000; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.camera-btns { display: flex; gap: 8px; margin-top: 0.75rem; }
+@media (max-width: 600px) { .upload-grid { grid-template-columns: 1fr; } .stats-row { grid-template-columns: 1fr; } }
+
+/* ── DASHBOARD ── */
+.dash-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; position: relative; overflow: hidden; }
+.dash-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3d7a2b, #7ab648); }
+.dash-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.dash-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; font-family: 'Playfair Display', Georgia, serif; }
+.dash-value span { font-size: 18px; font-weight: 400; color: var(--text2); margin-left: 3px; }
+.dash-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+.lb-row:last-child { border-bottom: none; }
+.lb-rank { font-size: 13px; font-weight: 700; color: var(--text3); width: 24px; text-align: center; flex-shrink: 0; }
+.lb-rank.gold { color: #c49a2a; font-size: 16px; }
+.lb-rank.silver { color: #888; font-size: 15px; }
+.lb-rank.bronze { color: #a0632a; font-size: 14px; }
+.lb-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+.lb-source { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.lb-bar-wrap { width: 120px; flex-shrink: 0; }
+.lb-bar-bg { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.lb-bar-fill { height: 100%; background: linear-gradient(90deg, #3d7a2b, #7ab648); border-radius: 99px; transition: width 0.4s ease; }
+.lb-hours { font-size: 13px; font-weight: 600; color: var(--green); white-space: nowrap; width: 50px; text-align: right; flex-shrink: 0; }
+
+/* ── INACTIVITY WARNING MODAL ── */
+#inactivityModal { z-index: 1000; }
+#inactivityModal .modal-box { text-align: center; }
+#inactivityModal .modal-icon { margin: 0 auto 1rem; background: var(--amber-light); }
+#inactivityModal .modal-icon svg { stroke: var(--amber-dark); }
+#inactivityCountdown { font-size: 48px; font-weight: 700; color: var(--green); font-family: 'Playfair Display', Georgia, serif; margin: 0.5rem 0 1.25rem; line-height: 1; }
+#inactivityCountdown.urgent { color: var(--red-dark); }
+
+/* ── DELETE MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 999; }
+.modal-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; max-width: 380px; width: 100%; }
+.modal-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--red-light); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+.modal-icon svg { width: 20px; height: 20px; stroke: var(--red-dark); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.modal-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.modal-box p { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.5; }
+.modal-box p strong { color: var(--text); }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-danger { background: #E24B4A; color: #fff; }
+.btn-danger:hover { background: #A32D2D; }
+.rec-del-btn { padding: 4px 8px; background: transparent; border: none; cursor: pointer; color: var(--text3); border-radius: 6px; transition: all 0.15s; }
+.rec-del-btn:hover { background: var(--red-light); color: var(--red-dark); }
+.rec-del-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div style="margin:0 auto 1rem;display:flex;justify-content:center">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 200" width="280" height="133">
+        <defs>
+          <radialGradient id="lglow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#d6eacc" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#d6eacc" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="lleafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7ab648"/><stop offset="100%" stop-color="#3d7a2b"/>
+          </linearGradient>
+          <linearGradient id="lleafGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a8d072"/><stop offset="100%" stop-color="#5a9e38"/>
+          </linearGradient>
+          <linearGradient id="lpotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#c4845a"/><stop offset="100%" stop-color="#8c5230"/>
+          </linearGradient>
+        </defs>
+        <rect width="420" height="200" fill="transparent" rx="12"/>
+        <ellipse cx="95" cy="100" rx="65" ry="65" fill="url(#lglow)"/>
+        <path d="M72 148 L118 148 L112 168 L78 168 Z" fill="url(#lpotGrad)"/>
+        <rect x="68" y="143" width="54" height="8" rx="3" fill="#b8733f"/>
+        <ellipse cx="95" cy="143" rx="24" ry="4" fill="#6b4226"/>
+        <path d="M95 142 Q92 125 95 110 Q97 98 95 85" stroke="#4a7c2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M95 110 Q70 95 62 75 Q78 80 95 110Z" fill="url(#lleafGrad)"/>
+        <path d="M95 110 Q70 95 62 75" stroke="#3d7a2b" stroke-width="0.8" fill="none"/>
+        <path d="M95 110 Q78 93 66 78" stroke="#5d9e38" stroke-width="0.6" fill="none" opacity="0.6"/>
+        <path d="M95 98 Q120 85 128 65 Q112 72 95 98Z" fill="url(#lleafGrad)"/>
+        <path d="M95 98 Q120 85 128 65" stroke="#3d7a2b" stroke-width="0.8" fill="none"/>
+        <path d="M95 98 Q112 83 124 68" stroke="#5d9e38" stroke-width="0.6" fill="none" opacity="0.6"/>
+        <path d="M95 85 Q85 68 88 52 Q98 63 95 85Z" fill="url(#lleafGrad2)"/>
+        <path d="M95 85 Q88 68 88 52" stroke="#4a8c28" stroke-width="0.8" fill="none"/>
+        <text x="168" y="95" font-family="'Playfair Display', Georgia, serif" font-size="32" font-weight="400" fill="#2d4a1e" letter-spacing="1">SOWN</text>
+        <text x="170" y="118" font-family="'Cormorant Garamond', Georgia, serif" font-size="14.5" font-weight="400" fill="#3d7a2b" letter-spacing="3">DATA MANAGEMENT</text>
+        <line x1="168" y1="128" x2="390" y2="128" stroke="#a8c488" stroke-width="0.7" opacity="0.7"/>
+        <line x1="168" y1="131" x2="390" y2="131" stroke="#a8c488" stroke-width="0.3" opacity="0.4"/>
+        <circle cx="168" cy="75" r="1.5" fill="#a8c488"/>
+      </svg>
+    </div>
+    <p class="sub">Sign in to continue</p>
+    <div id="loginError" class="login-error">Incorrect email or password — please try again.</div>
+    <div class="login-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="appScreen">
+<div class="app">
+
+  <div class="header">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 200" width="320" height="153" style="display:block">
+      <defs>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&amp;family=Cormorant+Garamond:wght@300;400&amp;display=swap');</style>
+        <radialGradient id="hglow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#d6eacc" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#d6eacc" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="hleafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#7ab648"/><stop offset="100%" stop-color="#3d7a2b"/>
+        </linearGradient>
+        <linearGradient id="hleafGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#a8d072"/><stop offset="100%" stop-color="#5a9e38"/>
+        </linearGradient>
+        <linearGradient id="hpotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#c4845a"/><stop offset="100%" stop-color="#8c5230"/>
+        </linearGradient>
+      </defs>
+      <rect width="420" height="200" fill="transparent" rx="12"/>
+      <ellipse cx="95" cy="100" rx="65" ry="65" fill="url(#hglow)"/>
+      <path d="M72 148 L118 148 L112 168 L78 168 Z" fill="url(#hpotGrad)"/>
+      <rect x="68" y="143" width="54" height="8" rx="3" fill="#b8733f"/>
+      <ellipse cx="95" cy="143" rx="24" ry="4" fill="#6b4226"/>
+      <path d="M95 142 Q92 125 95 110 Q97 98 95 85" stroke="#4a7c2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M95 110 Q70 95 62 75 Q78 80 95 110Z" fill="url(#hleafGrad)"/>
+      <path d="M95 110 Q70 95 62 75" stroke="#3d7a2b" stroke-width="0.8" fill="none"/>
+      <path d="M95 110 Q78 93 66 78" stroke="#5d9e38" stroke-width="0.6" fill="none" opacity="0.6"/>
+      <path d="M95 98 Q120 85 128 65 Q112 72 95 98Z" fill="url(#hleafGrad)"/>
+      <path d="M95 98 Q120 85 128 65" stroke="#3d7a2b" stroke-width="0.8" fill="none"/>
+      <path d="M95 98 Q112 83 124 68" stroke="#5d9e38" stroke-width="0.6" fill="none" opacity="0.6"/>
+      <path d="M95 85 Q85 68 88 52 Q98 63 95 85Z" fill="url(#hleafGrad2)"/>
+      <path d="M95 85 Q88 68 88 52" stroke="#4a8c28" stroke-width="0.8" fill="none"/>
+      <text x="168" y="95" font-family="'Playfair Display', Georgia, serif" font-size="32" font-weight="400" fill="#2d4a1e" letter-spacing="1">SOWN</text>
+      <text x="170" y="118" font-family="'Cormorant Garamond', Georgia, serif" font-size="14.5" font-weight="400" fill="#3d7a2b" letter-spacing="3">DATA MANAGEMENT</text>
+      <line x1="168" y1="128" x2="390" y2="128" stroke="#a8c488" stroke-width="0.7" opacity="0.7"/>
+      <line x1="168" y1="131" x2="390" y2="131" stroke="#a8c488" stroke-width="0.3" opacity="0.4"/>
+      <circle cx="168" cy="75" r="1.5" fill="#a8c488"/>
+    </svg>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem">
+    <button class="btn btn-secondary" onclick="signOut()" style="font-size:12px;padding:6px 14px">
+      <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+
+  <div id="apiNotice" class="api-notice">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div>
+      <strong>Enter your Anthropic API key to enable AI extraction</strong><br>
+      Stored only in your browser. Get one at <a href="https://console.anthropic.com" target="_blank" style="color:var(--green)">console.anthropic.com</a>
+      <div class="api-key-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+        <button onclick="saveApiKey()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" onclick="showTab('dashboard')" id="tab-dashboard-btn" class="tab active">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="tab" onclick="showTab('sown')" id="tab-sown-btn">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Log Hours
+    </button>
+    <button class="tab" onclick="showTab('sown-records')" id="tab-sown-records-btn">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Nursery Hours
+    </button>
+    <button class="tab" onclick="showTab('plants-out')" id="tab-plants-out-btn">
+      <svg viewBox="0 0 24 24"><path d="M12 22V12"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/><path d="M8 6l4-4 4 4"/><path d="M2 8h20"/></svg>
+      Plants Out
+    </button>
+    <button class="tab" onclick="showTab('plants-out-records')" id="tab-plants-out-records-btn">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Plants Records
+    </button>
+  </div>
+
+<!-- DASHBOARD PANEL -->
+<div id="panel-dashboard" class="panel active">
+  <div id="dashStatus" class="status"></div>
+
+  <!-- Hours stats -->
+  <p class="section-title" style="margin-bottom:0.75rem">🕐 Volunteer Hours</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem">
+    <div class="dash-card"><div class="dash-label">Total all time</div><div class="dash-value" id="dv-total">—</div><div class="dash-sub" id="ds-total"></div></div>
+    <div class="dash-card"><div class="dash-label">This week</div><div class="dash-value" id="dv-week">—</div><div class="dash-sub" id="ds-week"></div></div>
+    <div class="dash-card"><div class="dash-label">This month</div><div class="dash-value" id="dv-month">—</div><div class="dash-sub" id="ds-month"></div></div>
+    <div class="dash-card"><div class="dash-label">This year</div><div class="dash-value" id="dv-year">—</div><div class="dash-sub" id="ds-year"></div></div>
+  </div>
+
+  <!-- Plants stats -->
+  <p class="section-title" style="margin-bottom:0.75rem">🌿 Plants Out</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem">
+    <div class="dash-card"><div class="dash-label">Total all time</div><div class="dash-value" id="dv-plants-total">—</div><div class="dash-sub" id="ds-plants-total"></div></div>
+    <div class="dash-card"><div class="dash-label">This week</div><div class="dash-value" id="dv-plants-week">—</div><div class="dash-sub" id="ds-plants-week"></div></div>
+    <div class="dash-card"><div class="dash-label">This month</div><div class="dash-value" id="dv-plants-month">—</div><div class="dash-sub" id="ds-plants-month"></div></div>
+    <div class="dash-card"><div class="dash-label">This year</div><div class="dash-value" id="dv-plants-year">—</div><div class="dash-sub" id="ds-plants-year"></div></div>
+  </div>
+
+  <!-- Top 5 side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+    <div class="card">
+      <p class="section-title">🏆 Top 5 volunteers by hours</p>
+      <div id="topVolunteersHours"></div>
+    </div>
+    <div class="card">
+      <p class="section-title">🌱 Top 5 members by plants out</p>
+      <div id="topMembersPlants"></div>
+    </div>
+  </div>
+
+  <div style="text-align:right;margin-top:0.5rem">
+    <button class="btn btn-secondary" onclick="loadDashboard()" style="font-size:13px">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- SOWN SCAN PANEL -->
+<div id="panel-sown" class="panel">
+  <div class="steps">
+    <div class="step active" id="sown-step1"><div class="step-num">1</div> Capture book</div>
+    <div class="step-line"></div>
+    <div class="step" id="sown-step2"><div class="step-num">2</div> Review all rows</div>
+    <div class="step-line"></div>
+    <div class="step" id="sown-step3"><div class="step-num">3</div> Save all</div>
+  </div>
+  <div id="sownScanStatus" class="status"></div>
+  <div id="sownCaptureCard" class="card">
+    <p class="section-title">Photograph or upload the SOWN sign in/out book</p>
+    <div style="background:var(--amber-light);border:0.5px solid var(--amber-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber-dark);margin-bottom:1rem;">
+      <strong>📷 Photo tips:</strong> Lay book flat &nbsp;·&nbsp; Shoot straight down &nbsp;·&nbsp; Keep right-side up &nbsp;·&nbsp; Good lighting, no shadows
+    </div>
+    <div class="upload-grid">
+      <div class="upload-zone" onclick="document.getElementById('sownFileInput').click()">
+        <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        <strong>Upload photo</strong><span>Choose from your gallery</span>
+      </div>
+      <div class="upload-zone" onclick="startSownCamera()">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <strong>Take photo</strong><span>Use your device camera</span>
+      </div>
+    </div>
+    <input type="file" id="sownFileInput" accept="image/*" style="display:none" onchange="handleSownFile(event)">
+    <div id="sownCameraSection" style="display:none; margin-top:1rem;">
+      <video id="sownCameraFeed" class="camera-feed" autoplay playsinline></video>
+      <div class="camera-btns">
+        <button class="btn btn-primary" onclick="captureSownFrame()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> Capture
+        </button>
+        <button class="btn btn-secondary" onclick="stopSownCamera()">Cancel</button>
+      </div>
+    </div>
+    <canvas id="sownCanvas" style="display:none"></canvas>
+  </div>
+  <div id="sownReviewSection" style="display:none">
+    <div class="card">
+      <p class="section-title">Book page preview</p>
+      <img id="sownPreviewImg" class="preview-img" alt="Book preview">
+      <button class="btn btn-secondary" onclick="resetSownScan()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Retake
+      </button>
+    </div>
+    <div class="card">
+      <p class="section-title">Extracted records — edit any cell before saving</p>
+      <div class="review-table-wrap">
+        <table class="review-table">
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th>Date</th><th>Name</th><th>Start</th><th>Finish</th><th>Total Hours</th><th></th>
+          </tr></thead>
+          <tbody id="sownReviewBody"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-add" onclick="addSownRow()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add row
+        </button>
+        <span class="row-count" id="sownRowCount"></span>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="resetSownScan()">Cancel</button>
+        <button class="btn btn-primary" id="sownSaveAllBtn" onclick="saveSownAll()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Save all to database
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NURSERY HOURS RECORDS PANEL -->
+<div id="panel-sown-records" class="panel">
+  <div class="stats-row">
+    <div class="stat"><div class="stat-label">Total entries</div><div class="stat-value" id="sownStatTotal">0</div></div>
+    <div class="stat"><div class="stat-label">This week</div><div class="stat-value" id="sownStatWeek">0</div></div>
+    <div class="stat"><div class="stat-label">Unique volunteers</div><div class="stat-value" id="sownStatUnique">0</div></div>
+  </div>
+  <div class="card" style="padding:1rem">
+    <div class="search-row">
+      <input type="text" id="sownSearchInput" placeholder="Search by name..." oninput="filterSownRecords()">
+      <button class="btn btn-secondary" onclick="loadSownRecords()">
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Refresh
+      </button>
+    </div>
+    <div id="sownRecordsStatus" class="status"></div>
+    <div id="sownRecordsContainer">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <p>Click refresh to load records</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLANTS OUT SCAN PANEL -->
+<div id="panel-plants-out" class="panel">
+  <div class="steps">
+    <div class="step active" id="po-step1"><div class="step-num">1</div> Capture form</div>
+    <div class="step-line"></div>
+    <div class="step" id="po-step2"><div class="step-num">2</div> Review all rows</div>
+    <div class="step-line"></div>
+    <div class="step" id="po-step3"><div class="step-num">3</div> Save all</div>
+  </div>
+  <div id="plantsOutStatus" class="status"></div>
+  <div id="poCaptureCard" class="card">
+    <p class="section-title">Photograph or upload the Plants Out book</p>
+    <div style="background:var(--amber-light);border:0.5px solid var(--amber-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber-dark);margin-bottom:1rem;">
+      <strong>📷 Photo tips:</strong> Lay book flat &nbsp;·&nbsp; Shoot straight down &nbsp;·&nbsp; Keep right-side up &nbsp;·&nbsp; Good lighting, no shadows
+    </div>
+    <div class="upload-grid">
+      <div class="upload-zone" onclick="document.getElementById('poFileInput').click()">
+        <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        <strong>Upload photo</strong><span>Choose from your gallery</span>
+      </div>
+      <div class="upload-zone" onclick="startPoCamera()">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <strong>Take photo</strong><span>Use your device camera</span>
+      </div>
+    </div>
+    <input type="file" id="poFileInput" accept="image/*" style="display:none" onchange="handlePoFile(event)">
+    <div id="poCameraSection" style="display:none; margin-top:1rem;">
+      <video id="poCameraFeed" class="camera-feed" autoplay playsinline></video>
+      <div class="camera-btns">
+        <button class="btn btn-primary" onclick="capturePoFrame()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> Capture
+        </button>
+        <button class="btn btn-secondary" onclick="stopPoCamera()">Cancel</button>
+      </div>
+    </div>
+    <canvas id="poCanvas" style="display:none"></canvas>
+  </div>
+
+  <div id="poReviewSection" style="display:none">
+    <div class="card">
+      <p class="section-title">Form preview</p>
+      <img id="poPreviewImg" class="preview-img" alt="Form preview">
+      <button class="btn btn-secondary" onclick="resetPoScan()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Retake
+      </button>
+    </div>
+    <div class="card">
+      <p class="section-title">Extracted records — edit any cell before saving</p>
+      <div class="review-table-wrap">
+        <table class="review-table">
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th>Date</th><th>M'ship No.</th><th>Name</th><th>Lomandra</th><th>Other species</th><th>Total plants</th><th>Planting site</th><th></th>
+          </tr></thead>
+          <tbody id="poReviewBody"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-add" onclick="addPoRow()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add row
+        </button>
+        <span class="row-count" id="poRowCount"></span>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="resetPoScan()">Cancel</button>
+        <button class="btn btn-primary" id="poSaveAllBtn" onclick="savePoAll()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Save all to database
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLANTS OUT RECORDS PANEL -->
+<div id="panel-plants-out-records" class="panel">
+  <div class="stats-row">
+    <div class="stat"><div class="stat-label">Total records</div><div class="stat-value" id="poStatTotal">0</div></div>
+    <div class="stat"><div class="stat-label">Total plants out</div><div class="stat-value" id="poStatPlants">0</div></div>
+    <div class="stat"><div class="stat-label">This month</div><div class="stat-value" id="poStatMonth">0</div></div>
+  </div>
+  <div class="card" style="padding:1rem">
+    <div class="search-row">
+      <input type="text" id="poSearchInput" placeholder="Search by name or site..." oninput="filterPlantsOutRecords()">
+      <button class="btn btn-secondary" onclick="loadPlantsOutRecords()">
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Refresh
+      </button>
+    </div>
+    <div id="poRecordsStatus" class="status"></div>
+    <div id="poRecordsContainer">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <p>Click refresh to load records</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<!-- INACTIVITY WARNING MODAL -->
+<div id="inactivityModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    </div>
+    <h3>Still there?</h3>
+    <p>You'll be signed out due to inactivity in</p>
+    <div id="inactivityCountdown">60</div>
+    <div class="modal-btns" style="justify-content:center">
+      <button class="btn btn-primary" onclick="resetInactivityTimer()">
+        <svg viewBox="0 0 24 24"><path d="M20 11A8 8 0 1 0 9.06 17.87"/><polyline points="20 7 20 11 16 11"/></svg>
+        Stay signed in
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </div>
+    <h3>Delete record?</h3>
+    <p>You are about to permanently delete <strong id="deleteRecordName"></strong>. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete permanently
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+var SUPABASE_URL = 'https://ijjiqmelehzrvigmwvbs.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_PXemVyoq1dpWjjOPJFD0tg_AAKEf2eA';
+var cameraStream = null, extractedRows = [];
+
+// ── INACTIVITY TIMEOUT ──
+var INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hour
+var WARNING_DURATION = 60 * 1000;         // 60-second warning
+var inactivityTimer = null;
+var countdownInterval = null;
+
+function resetInactivityTimer() {
+  document.getElementById('inactivityModal').style.display = 'none';
+  var cd = document.getElementById('inactivityCountdown');
+  cd.textContent = '60';
+  cd.classList.remove('urgent');
+  clearInterval(countdownInterval);
+  if (!sessionStorage.getItem('sb_token')) return;
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(showInactivityWarning, INACTIVITY_TIMEOUT - WARNING_DURATION);
+}
+
+function showInactivityWarning() {
+  document.getElementById('inactivityModal').style.display = 'flex';
+  var secs = 60;
+  var cd = document.getElementById('inactivityCountdown');
+  cd.textContent = secs;
+  countdownInterval = setInterval(function() {
+    secs--;
+    cd.textContent = secs;
+    if (secs <= 10) cd.classList.add('urgent');
+    if (secs <= 0) { clearInterval(countdownInterval); signOut(); }
+  }, 1000);
+}
+
+['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(function(evt) {
+  document.addEventListener(evt, function() {
+    if (sessionStorage.getItem('sb_token')) resetInactivityTimer();
+  }, { passive: true });
+});
+
+// ── AUTH ──
+var supabaseAuthUrl = SUPABASE_URL + '/auth/v1';
+var accessToken = null;
+
+async function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var password = document.getElementById('loginPassword').value;
+  var btn = document.getElementById('loginBtn');
+  var errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Signing in...';
+  btn.disabled = true;
+  try {
+    var res = await fetch(supabaseAuthUrl + '/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email: email, password: password })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.msg || 'Login failed');
+    accessToken = data.access_token;
+    sessionStorage.setItem('sb_token', accessToken);
+    sessionStorage.setItem('sb_refresh', data.refresh_token);
+    showApp();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+    btn.textContent = 'Sign in';
+    btn.disabled = false;
+  }
+}
+
+async function refreshSession() {
+  var refresh = sessionStorage.getItem('sb_refresh');
+  if (!refresh) return false;
+  try {
+    var res = await fetch(supabaseAuthUrl + '/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ refresh_token: refresh })
+    });
+    var data = await res.json();
+    if (!res.ok) return false;
+    accessToken = data.access_token;
+    sessionStorage.setItem('sb_token', accessToken);
+    sessionStorage.setItem('sb_refresh', data.refresh_token);
+    return true;
+  } catch(e) { return false; }
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  loadDashboard();
+  resetInactivityTimer();
+}
+
+function signOut() {
+  clearTimeout(inactivityTimer);
+  clearInterval(countdownInterval);
+  document.getElementById('inactivityModal').style.display = 'none';
+  sessionStorage.removeItem('sb_token');
+  sessionStorage.removeItem('sb_refresh');
+  accessToken = null;
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+// ── INIT ──
+window.addEventListener('load', async function() {
+  var token = sessionStorage.getItem('sb_token');
+  if (token) {
+    accessToken = token;
+    var ok = await fetch(supabaseAuthUrl + '/user', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token }
+    }).then(function(r) { return r.ok; }).catch(function() { return false; });
+    if (!ok) ok = await refreshSession();
+    if (ok) { showApp(); }
+    else { sessionStorage.removeItem('sb_token'); sessionStorage.removeItem('sb_refresh'); }
+  }
+  var k = localStorage.getItem('anthropic_api_key');
+  if (k) document.getElementById('apiNotice').style.display = 'none';
+});
+
+// ── API KEY ──
+function getApiKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+function saveApiKey() {
+  var k = document.getElementById('apiKeyInput').value.trim();
+  if (!k.startsWith('sk-ant-')) { alert('Invalid key - should start with sk-ant-'); return; }
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('apiNotice').style.display = 'none';
+  alert('API key saved!');
+}
+
+// ── TABS ── (see showTab in dashboard section)
+
+// ── STEPS ──
+function setStep(n) {
+  ['step1','step2','step3'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    el.classList.remove('active','done');
+    if (i+1 < n) el.classList.add('done');
+    else if (i+1 === n) el.classList.add('active');
+  });
+}
+
+// ── STATUS ──
+function showStatus(msg, type, id) {
+  id = id || 'scanStatus';
+  var el = document.getElementById(id);
+  el.className = 'status ' + type;
+  var icon = type === 'info' ? '<div class="spinner"></div>'
+    : type === 'success' ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  el.innerHTML = icon + '<span>' + msg + '</span>';
+}
+function clearStatus(id) { document.getElementById(id||'scanStatus').className = 'status'; }
+
+// ── FILE / CAMERA ──
+function handleFile(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) { processImage(ev.target.result); };
+  r.readAsDataURL(f);
+}
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function(s) { cameraStream = s; document.getElementById('cameraFeed').srcObject = s; document.getElementById('cameraSection').style.display = 'block'; })
+    .catch(function() { showStatus('Camera access denied. Use the upload option.', 'error'); });
+}
+function stopCamera() {
+  if (cameraStream) { cameraStream.getTracks().forEach(function(t) { t.stop(); }); cameraStream = null; }
+  document.getElementById('cameraSection').style.display = 'none';
+}
+function captureFrame() {
+  var v = document.getElementById('cameraFeed'), c = document.getElementById('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  stopCamera(); processImage(c.toDataURL('image/jpeg', 0.92));
+}
+function processImage(dataUrl) {
+  document.getElementById('previewImg').src = dataUrl;
+  document.getElementById('captureCard').style.display = 'none';
+  document.getElementById('reviewSection').style.display = 'block';
+  setStep(2);
+  extractWithAI(dataUrl);
+}
+
+// ── AI EXTRACTION ──
+async function extractWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error'); document.getElementById('apiNotice').style.display = 'flex'; return; }
+  showStatus('Reading all rows from sheet — please wait...', 'info');
+  var base64 = dataUrl.split(',')[1];
+  var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a Brisbane City Council volunteer sign-in sheet. It may be rotated - reorient as needed. It has numbered rows and 7 columns left-to-right:\n1. Participant name\n2. Initial\n3. Start time\n4. Finish time\n5. Total hours worked\n6. Email address and/or Phone number (@ = email, digits = phone)\n7. Contact in case of emergency\n\nExtract every row with a name. Return ONLY this JSON array structure, starting with [ and ending with ]:\n[{"participant_name":"","initial":"","start_time":"","finish_time":"","total_hours_worked":null,"email_address":"","phone_number":"","emergency_contact":""}]' }
+        ]}]
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    var data = await res.json();
+    var text = data.content.map(function(c) { return c.text||''; }).join('');
+    // Extract JSON array even if AI adds surrounding text
+    var jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found in response');
+    var rows = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error('No rows found');
+    extractedRows = rows;
+    renderReviewTable(rows);
+    clearStatus();
+    setStep(3);
+    showStatus(rows.length + ' row' + (rows.length !== 1 ? 's' : '') + ' extracted. Edit any cell if needed, then save all.', 'success');
+    setTimeout(function() { clearStatus(); }, 7000);
+  } catch(e) {
+    showStatus('Extraction failed: ' + e.message + '. Add rows manually below.', 'error');
+    extractedRows = [emptyRow()];
+    renderReviewTable(extractedRows);
+  }
+}
+
+function emptyRow() { return { participant_name:'', initial:'', phone_number:'', email_address:'', start_time:'', finish_time:'', total_hours_worked:null, emergency_contact:'' }; }
+function esc(v) { return (v||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderReviewTable(rows) {
+  var tbody = document.getElementById('reviewBody');
+  tbody.innerHTML = '';
+  rows.forEach(function(row, i) { addRowToTable(row, i); });
+  updateRowCount();
+}
+
+function addRowToTable(row, i) {
+  var tbody = document.getElementById('reviewBody');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td class="row-num">' + (i+1) + '</td>' +
+    '<td><input type="text" value="' + esc(row.participant_name) + '" placeholder="Name"></td>' +
+    '<td><input type="text" value="' + esc(row.initial) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.phone_number) + '" placeholder="—"></td>' +
+    '<td><input type="text" value="' + esc(row.email_address) + '" placeholder="—"></td>' +
+    '<td><input type="text" value="' + esc(row.start_time) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.finish_time) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="number" value="' + (row.total_hours_worked != null ? row.total_hours_worked : '') + '" placeholder="—" class="narrow" step="0.5"></td>' +
+    '<td><input type="text" value="' + esc(row.emergency_contact) + '" placeholder="—"></td>' +
+    '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
+  tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updateRowCount(); });
+  tbody.appendChild(tr);
+}
+
+function addRow() {
+  var tbody = document.getElementById('reviewBody');
+  addRowToTable(emptyRow(), tbody.rows.length);
+  tbody.lastElementChild.querySelector('input').focus();
+  updateRowCount();
+}
+
+function updateRowCount() {
+  var n = document.getElementById('reviewBody').rows.length;
+  document.getElementById('rowCount').innerHTML = '<strong>' + n + '</strong> row' + (n !== 1 ? 's' : '');
+}
+
+function getRowsFromTable() {
+  var rows = [];
+  document.querySelectorAll('#reviewBody tr').forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    var name = inputs[0].value.trim();
+    if (!name) return;
+    rows.push({
+      participant_name: name,
+      initial: inputs[1].value.trim(),
+      phone_number: inputs[2].value.trim(),
+      email_address: inputs[3].value.trim(),
+      start_time: inputs[4].value.trim(),
+      finish_time: inputs[5].value.trim(),
+      total_hours_worked: inputs[6].value === '' ? null : parseFloat(inputs[6].value),
+      emergency_contact: inputs[7].value.trim()
+    });
+  });
+  return rows;
+}
+
+async function saveAll() {
+  var valid = getRowsFromTable();
+  if (valid.length === 0) { showStatus('Please enter at least one participant name.', 'error'); return; }
+  var btn = document.getElementById('saveAllBtn');
+  btn.disabled = true;
+  showStatus('Saving ' + valid.length + ' record' + (valid.length !== 1 ? 's' : '') + '...', 'info');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/registrations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(valid)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showStatus(valid.length + ' record' + (valid.length !== 1 ? 's' : '') + ' saved!', 'success');
+    setTimeout(function() { resetScan(); clearStatus(); }, 2500);
+  } catch(e) {
+    showStatus('Save failed: ' + e.message, 'error');
+    btn.disabled = false;
+  }
+}
+
+function resetScan() {
+  document.getElementById('reviewSection').style.display = 'none';
+  document.getElementById('captureCard').style.display = 'block';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('saveAllBtn').disabled = false;
+  document.getElementById('reviewBody').innerHTML = '';
+  extractedRows = [];
+  clearStatus(); setStep(1);
+}
+
+
+
+
+
+
+
+
+
+// ── DELETE ──
+var pendingDeleteId = null;
+var pendingDeleteIsSown = false;
+var pendingDeleteTable = null;
+
+function openDeleteModal(id, name, isSown, table) {
+  pendingDeleteId = id;
+  pendingDeleteIsSown = isSown || false;
+  pendingDeleteTable = table || null;
+  document.getElementById('deleteRecordName').textContent = (name||'').replace(/&quot;/g, '"');
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  pendingDeleteIsSown = false;
+  document.getElementById('deleteModal').style.display = 'none';
+  // Always re-enable the confirm button for next use
+  var btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete permanently';
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  var btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+  try {
+    var table = pendingDeleteTable || (pendingDeleteIsSown ? 'sown_signins' : 'registrations');
+    var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + pendingDeleteId, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    var wasTable = pendingDeleteTable;
+    var wasSown = pendingDeleteIsSown;
+    closeDeleteModal();
+    if (wasTable === 'plants_out') loadPlantsOutRecords();
+    else if (wasSown) loadSownRecords();
+  } catch(e) {
+    alert('Delete failed: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete permanently';
+  }
+}
+
+// Close modal if clicking outside
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+
+// ── DASHBOARD ──
+var dashBccRecords = [];
+var dashSownRecords = [];
+var dashPlantsRecords = [];
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('tab-' + name + '-btn').classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'sown-records') loadSownRecords();
+  if (name === 'dashboard') loadDashboard();
+
+  if (name === 'plants-out-records') loadPlantsOutRecords();
+}
+
+async function loadDashboard() {
+  showStatus('Loading dashboard data...', 'info', 'dashStatus');
+  try {
+    var r1 = await fetch(SUPABASE_URL + '/rest/v1/sown_signins?select=name,total_hours,date,created_at&limit=5000', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    var r2 = await fetch(SUPABASE_URL + '/rest/v1/plants_out?select=membership_number,name,total_plants,date,created_at&limit=5000', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!r1.ok) throw new Error(await r1.text());
+    if (!r2.ok) throw new Error(await r2.text());
+    dashSownRecords = await r1.json();
+    dashPlantsRecords = await r2.json();
+    clearStatus('dashStatus');
+    renderDashboard();
+  } catch(e) {
+    showStatus('Error loading dashboard: ' + e.message, 'error', 'dashStatus');
+  }
+}
+
+function renderDashboard() {
+  var now = new Date();
+  var startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay()); startOfWeek.setHours(0,0,0,0);
+  var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  var startOfYear = new Date(now.getFullYear(), 0, 1);
+
+  // ── HOURS ──
+  var sown = dashSownRecords.map(function(r) {
+    var d = parseDate(r.date) || new Date(r.created_at);
+    return { name: (r.name||'').trim(), hours: r.total_hours != null ? Number(r.total_hours) : 0, date: d };
+  });
+  function sumH(recs) { return recs.reduce(function(s,r) { return s + (r.hours||0); }, 0); }
+  function fmtH(h) { return Math.round(h * 10) / 10; }
+  setCard('total', fmtH(sumH(sown)), sown.length + ' sessions');
+  setCard('week', fmtH(sumH(sown.filter(function(r){return r.date>=startOfWeek;}))), sown.filter(function(r){return r.date>=startOfWeek;}).length + ' sessions');
+  setCard('month', fmtH(sumH(sown.filter(function(r){return r.date>=startOfMonth;}))), sown.filter(function(r){return r.date>=startOfMonth;}).length + ' sessions');
+  setCard('year', fmtH(sumH(sown.filter(function(r){return r.date>=startOfYear;}))), sown.filter(function(r){return r.date>=startOfYear;}).length + ' sessions');
+
+  // ── PLANTS ──
+  var plants = (dashPlantsRecords||[]).map(function(r) {
+    var d = parseDate(r.date) || new Date(r.created_at);
+    return { membership: (r.membership_number||'').trim(), name: (r.name||'').trim(), total: r.total_plants != null ? Number(r.total_plants) : 0, date: d };
+  });
+  function sumP(recs) { return recs.reduce(function(s,r) { return s + (r.total||0); }, 0); }
+  setPlantCard('plants-total', sumP(plants), plants.length + ' records');
+  setPlantCard('plants-week', sumP(plants.filter(function(r){return r.date>=startOfWeek;})), plants.filter(function(r){return r.date>=startOfWeek;}).length + ' records');
+  setPlantCard('plants-month', sumP(plants.filter(function(r){return r.date>=startOfMonth;})), plants.filter(function(r){return r.date>=startOfMonth;}).length + ' records');
+  setPlantCard('plants-year', sumP(plants.filter(function(r){return r.date>=startOfYear;})), plants.filter(function(r){return r.date>=startOfYear;}).length + ' records');
+
+  // ── TOP 5 VOLUNTEERS BY HOURS ──
+  var hoursMap = {};
+  sown.forEach(function(r) {
+    var key = r.name.toLowerCase(); if (!key) return;
+    if (!hoursMap[key]) hoursMap[key] = { name: r.name, hours: 0, sessions: 0 };
+    hoursMap[key].hours += r.hours || 0;
+    hoursMap[key].sessions++;
+  });
+  var top5h = Object.values(hoursMap).sort(function(a,b){return b.hours-a.hours;}).slice(0,5);
+  var maxH = top5h.length ? top5h[0].hours : 1;
+  var medals = ['🥇','🥈','🥉'];
+  var medalClass = ['gold','silver','bronze'];
+  var tvh = document.getElementById('topVolunteersHours');
+  if (!top5h.length) {
+    tvh.innerHTML = '<p style="color:var(--text2);font-size:13px;padding:0.5rem 0">No hours data yet</p>';
+  } else {
+    tvh.innerHTML = top5h.map(function(v,i) {
+      var pct = maxH > 0 ? (v.hours / maxH * 100) : 0;
+      var rank = i < 3 ? '<span class="lb-rank ' + medalClass[i] + '">' + medals[i] + '</span>' : '<span class="lb-rank">' + (i+1) + '.</span>';
+      return '<div class="lb-row" style="padding:6px 0">' + rank +
+        '<div><div class="lb-name" style="font-size:13px">' + v.name + '</div><div class="lb-source">' + v.sessions + ' session' + (v.sessions!==1?'s':'') + '</div></div>' +
+        '<div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:' + pct + '%"></div></div></div>' +
+        '<div class="lb-hours">' + fmtH(v.hours) + 'h</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  // ── TOP 5 MEMBERS BY PLANTS ──
+  var memberMap = {};
+  plants.forEach(function(r) {
+    var key = r.membership || r.name.toLowerCase(); if (!key) return;
+    if (!memberMap[key]) memberMap[key] = { membership: r.membership, name: r.name, total: 0, records: 0 };
+    memberMap[key].total += r.total || 0;
+    memberMap[key].records++;
+  });
+  var top5p = Object.values(memberMap).sort(function(a,b){return b.total-a.total;}).slice(0,5);
+  var maxP = top5p.length ? top5p[0].total : 1;
+  var tm = document.getElementById('topMembersPlants');
+  if (!top5p.length) {
+    tm.innerHTML = '<p style="color:var(--text2);font-size:13px;padding:0.5rem 0">No plant records yet</p>';
+  } else {
+    tm.innerHTML = top5p.map(function(v,i) {
+      var pct = maxP > 0 ? (v.total / maxP * 100) : 0;
+      var rank = i < 3 ? '<span class="lb-rank ' + medalClass[i] + '">' + medals[i] + '</span>' : '<span class="lb-rank">' + (i+1) + '.</span>';
+      return '<div class="lb-row" style="padding:6px 0">' + rank +
+        '<div><div class="lb-name" style="font-size:13px">' + (v.membership ? '#' + v.membership + ' — ' : '') + v.name + '</div></div>' +
+        '<div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:' + pct + '%"></div></div></div>' +
+        '<div class="lb-hours">' + v.total + '</div>' +
+        '</div>';
+    }).join('');
+  }
+}
+
+function setPlantCard(id, value, sub) {
+  var el = document.getElementById('dv-' + id);
+  if (el) el.innerHTML = value + '<span> plants</span>';
+  var s = document.getElementById('ds-' + id);
+  if (s) s.textContent = sub;
+}
+
+function setCard(id, value, sub) {
+  document.getElementById('dv-' + id).innerHTML = value + '<span>hrs</span>';
+  document.getElementById('ds-' + id).textContent = sub;
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  var m = str.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+  if (!m) return null;
+  var y = m[3].length === 2 ? 2000 + parseInt(m[3]) : parseInt(m[3]);
+  return new Date(y, parseInt(m[2])-1, parseInt(m[1]));
+}
+
+// ── PLANTS OUT SCANNER ──
+var allPlantsOutRecords = [];
+var poExtractedRows = [];
+var poCameraStream = null;
+
+function setPOStep(n) {
+  ['po-step1','po-step2','po-step3'].forEach(function(id,i) {
+    var el = document.getElementById(id);
+    el.classList.remove('active','done');
+    if (i+1 < n) el.classList.add('done');
+    else if (i+1 === n) el.classList.add('active');
+  });
+}
+
+function handlePoFile(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) { processPoImage(ev.target.result); };
+  r.readAsDataURL(f);
+}
+function startPoCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function(s) { poCameraStream = s; document.getElementById('poCameraFeed').srcObject = s; document.getElementById('poCameraSection').style.display = 'block'; })
+    .catch(function() { showStatus('Camera access denied. Use the upload option.', 'error', 'plantsOutStatus'); });
+}
+function stopPoCamera() {
+  if (poCameraStream) { poCameraStream.getTracks().forEach(function(t) { t.stop(); }); poCameraStream = null; }
+  document.getElementById('poCameraSection').style.display = 'none';
+}
+function capturePoFrame() {
+  var v = document.getElementById('poCameraFeed'), c = document.getElementById('poCanvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  stopPoCamera(); processPoImage(c.toDataURL('image/jpeg', 0.92));
+}
+function processPoImage(dataUrl) {
+  document.getElementById('poPreviewImg').src = dataUrl;
+  document.getElementById('poCaptureCard').style.display = 'none';
+  document.getElementById('poReviewSection').style.display = 'block';
+  setPOStep(2);
+  extractPoWithAI(dataUrl);
+}
+
+async function extractPoWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error', 'plantsOutStatus'); return; }
+  showStatus('Reading all rows from form — please wait...', 'info', 'plantsOutStatus');
+  var base64 = dataUrl.split(',')[1];
+  var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT WHATSOEVER.\\n\\nThis is a SOWN Plants Out distribution record book — a physical notebook photographed from above. The book is open to a double page spread. There is a SPINE/BINDING running vertically down the CENTRE of the image which may obscure some column values.\\n\\nThe column headers are printed in coloured bands at the TOP of the page in this exact left-to-right order:\\n1. DATE — handwritten dates like 16/5/26, 20.5.26. Normalise to DD/MM/YYYY.\\n2. M-ship No. — 3-4 digit membership number like 1551, 8653, 3099\\n3. NAME — ONE volunteer name per row e.g. Chris Reid, Nick Lobbe, V Mills\\n4. No. Lomandra — INTEGER. Left half of double-page (before spine)\\n5. No. Other species — INTEGER. May be near/across the spine\\n6. Total no. tubes — INTEGER total plants\\n7. PLANTING SITE — full address on the RIGHT half of the double page\\n\\nCRITICAL RULES:\\n- ONE ROW = ONE PERSON. Never combine two names into one row.\\n- Each line with a date and name is a SEPARATE row — even if values seem close together\\n- The spine in the middle may hide some numbers — use null for hidden/unclear values\\n- DO NOT extract the header example row (Joe Bloggs, 9876)\\n- DO NOT extract PAGE TOTALS rows\\n- Lomandra and Other species are DIFFERENT columns — read independently\\n- A dash (—) in a number column means null/blank\\n- Copy the FULL planting site without truncating\\n- Return ONLY valid JSON array:\\n[{"date":"","membership_number":"","name":"","no_lomandra":null,"no_other_species":null,"total_plants":null,"planting_site":""}]' }
+        ]}]
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    var data = await res.json();
+    var text = data.content.map(function(c) { return c.text||''; }).join('');
+    var jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found');
+    var rows = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error('No rows found');
+    poExtractedRows = rows;
+    renderPoReviewTable(rows);
+    clearStatus('plantsOutStatus');
+    setPOStep(3);
+    showStatus(rows.length + ' row' + (rows.length !== 1 ? 's' : '') + ' extracted. Edit if needed, then save all.', 'success', 'plantsOutStatus');
+    setTimeout(function() { clearStatus('plantsOutStatus'); }, 7000);
+  } catch(e) {
+    showStatus('Extraction failed: ' + e.message + '. Add rows manually below.', 'error', 'plantsOutStatus');
+    poExtractedRows = [emptyPoRow()];
+    renderPoReviewTable(poExtractedRows);
+  }
+}
+
+function emptyPoRow() { return { date:'', membership_number:'', name:'', no_lomandra:null, no_other_species:null, total_plants:null, planting_site:'' }; }
+
+function renderPoReviewTable(rows) {
+  var tbody = document.getElementById('poReviewBody');
+  tbody.innerHTML = '';
+  rows.forEach(function(row, i) { addPoRowToTable(row, i); });
+  updatePoRowCount();
+}
+
+function addPoRowToTable(row, i) {
+  var tbody = document.getElementById('poReviewBody');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td class="row-num">' + (i+1) + '</td>' +
+    '<td><input type="text" value="' + esc(row.date) + '" placeholder="DD/MM/YYYY" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.membership_number) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.name) + '" placeholder="Name" style="min-width:160px"></td>' +
+    '<td><input type="number" value="' + (row.no_lomandra != null ? row.no_lomandra : '') + '" placeholder="0" class="narrow" min="0"></td>' +
+    '<td><input type="number" value="' + (row.no_other_species != null ? row.no_other_species : '') + '" placeholder="0" class="narrow" min="0"></td>' +
+    '<td><input type="number" value="' + (row.total_plants != null ? row.total_plants : '') + '" placeholder="0" class="narrow" min="0"></td>' +
+    '<td><input type="text" value="' + esc(row.planting_site) + '" placeholder="Site name" style="min-width:200px"></td>' +
+    '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
+  tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updatePoRowCount(); });
+  tbody.appendChild(tr);
+}
+
+function addPoRow() {
+  var tbody = document.getElementById('poReviewBody');
+  addPoRowToTable(emptyPoRow(), tbody.rows.length);
+  tbody.lastElementChild.querySelector('input').focus();
+  updatePoRowCount();
+}
+
+function updatePoRowCount() {
+  var n = document.getElementById('poReviewBody').rows.length;
+  document.getElementById('poRowCount').innerHTML = '<strong>' + n + '</strong> row' + (n !== 1 ? 's' : '');
+}
+
+function getPoRowsFromTable() {
+  var rows = [];
+  document.querySelectorAll('#poReviewBody tr').forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    var name = inputs[2].value.trim();
+    if (!name) return;
+    rows.push({
+      date: normaliseDate(inputs[0].value.trim()),
+      membership_number: inputs[1].value.trim(),
+      name: name,
+      no_lomandra: inputs[3].value === '' ? null : parseInt(inputs[3].value),
+      no_other_species: inputs[4].value === '' ? null : parseInt(inputs[4].value),
+      total_plants: inputs[5].value === '' ? null : parseInt(inputs[5].value),
+      planting_site: inputs[6].value.trim()
+    });
+  });
+  return rows;
+}
+
+async function savePoAll() {
+  var valid = getPoRowsFromTable();
+  if (valid.length === 0) { showStatus('Please enter at least one name.', 'error', 'plantsOutStatus'); return; }
+  var btn = document.getElementById('poSaveAllBtn');
+  btn.disabled = true;
+  showStatus('Saving ' + valid.length + ' record' + (valid.length !== 1 ? 's' : '') + '...', 'info', 'plantsOutStatus');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/plants_out', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(valid)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showStatus(valid.length + ' record' + (valid.length !== 1 ? 's' : '') + ' saved!', 'success', 'plantsOutStatus');
+    setTimeout(function() { resetPoScan(); clearStatus('plantsOutStatus'); }, 2500);
+  } catch(e) {
+    showStatus('Save failed: ' + e.message, 'error', 'plantsOutStatus');
+    btn.disabled = false;
+  }
+}
+
+function resetPoScan() {
+  document.getElementById('poReviewSection').style.display = 'none';
+  document.getElementById('poCaptureCard').style.display = 'block';
+  document.getElementById('poFileInput').value = '';
+  document.getElementById('poSaveAllBtn').disabled = false;
+  document.getElementById('poReviewBody').innerHTML = '';
+  poExtractedRows = [];
+  clearStatus('plantsOutStatus');
+  setPOStep(1);
+}
+
+async function loadPlantsOutRecords() {
+  showStatus('Loading...', 'info', 'poRecordsStatus');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/plants_out?order=created_at.desc&limit=500', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    allPlantsOutRecords = await res.json();
+    clearStatus('poRecordsStatus');
+    updatePlantsOutStats();
+    renderPlantsOutRecords(allPlantsOutRecords);
+  } catch(e) { showStatus('Error: ' + e.message, 'error', 'poRecordsStatus'); }
+}
+
+function updatePlantsOutStats() {
+  document.getElementById('poStatTotal').textContent = allPlantsOutRecords.length;
+  var totalPlants = allPlantsOutRecords.reduce(function(s,r) { return s + (r.total_plants||0); }, 0);
+  document.getElementById('poStatPlants').textContent = totalPlants;
+  var startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
+  var monthPlants = allPlantsOutRecords.filter(function(r) { return new Date(r.created_at) >= startOfMonth; })
+    .reduce(function(s,r) { return s + (r.total_plants||0); }, 0);
+  document.getElementById('poStatMonth').textContent = monthPlants;
+}
+
+function filterPlantsOutRecords() {
+  var q = document.getElementById('poSearchInput').value.toLowerCase();
+  renderPlantsOutRecords(q ? allPlantsOutRecords.filter(function(r) {
+    return (r.name||'').toLowerCase().includes(q) || (r.planting_site||'').toLowerCase().includes(q);
+  }) : allPlantsOutRecords);
+}
+
+function renderPlantsOutRecords(records) {
+  var c = document.getElementById('poRecordsContainer');
+  if (!records.length) {
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><p>No records found</p></div>';
+    return;
+  }
+  var html = '<div class="records-table-wrap"><table class="records-table"><thead><tr>' +
+    '<th>Date</th><th>Member #</th><th>Name</th><th>Lomandra</th><th>Other species</th><th>Total plants</th><th>Planting site</th><th>Added</th><th></th>' +
+    '</tr></thead><tbody>';
+  records.forEach(function(r) {
+    var delBtn = '<button class="rec-del-btn" data-id="' + r.id + '" data-name="' + (r.name||'this record').replace(/"/g,'&quot;') + '" data-table="plants_out" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>';
+    html += '<tr>' +
+      '<td style="white-space:nowrap">' + (r.date||'—') + '</td>' +
+      '<td>' + (r.membership_number||'—') + '</td>' +
+      '<td style="font-weight:600">' + (r.name||'—') + '</td>' +
+      '<td style="text-align:center">' + (r.no_lomandra != null ? r.no_lomandra : '—') + '</td>' +
+      '<td style="text-align:center">' + (r.no_other_species != null ? r.no_other_species : '—') + '</td>' +
+      '<td style="text-align:center"><span class="badge badge-green">' + (r.total_plants||0) + '</span></td>' +
+      '<td>' + (r.planting_site||'—') + '</td>' +
+      '<td style="color:var(--text2);white-space:nowrap;font-size:12px">' + new Date(r.created_at).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}) + '</td>' +
+      '<td>' + delBtn + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  c.innerHTML = html;
+}
+
+// Single delegated listener for ALL delete buttons in both record tables
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.rec-del-btn');
+  if (!btn) return;
+  openDeleteModal(btn.dataset.id, (btn.dataset.name||'this record').replace(/&quot;/g,'"'), btn.dataset.sown === 'true', btn.dataset.table || null);
+});
+
+// ── SOWN FUNCTIONS ──
+var sownCameraStream = null;
+var sownExtractedRows = [];
+var allSownRecords = [];
+
+function handleSownFile(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) { processSownImage(ev.target.result); };
+  r.readAsDataURL(f);
+}
+function startSownCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function(s) { sownCameraStream = s; document.getElementById('sownCameraFeed').srcObject = s; document.getElementById('sownCameraSection').style.display = 'block'; })
+    .catch(function() { showStatus('Camera access denied. Use the upload option.', 'error', 'sownScanStatus'); });
+}
+function stopSownCamera() {
+  if (sownCameraStream) { sownCameraStream.getTracks().forEach(function(t) { t.stop(); }); sownCameraStream = null; }
+  document.getElementById('sownCameraSection').style.display = 'none';
+}
+function captureSownFrame() {
+  var v = document.getElementById('sownCameraFeed'), c = document.getElementById('sownCanvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  stopSownCamera(); processSownImage(c.toDataURL('image/jpeg', 0.92));
+}
+function processSownImage(dataUrl) {
+  document.getElementById('sownPreviewImg').src = dataUrl;
+  document.getElementById('sownCaptureCard').style.display = 'none';
+  document.getElementById('sownReviewSection').style.display = 'block';
+  setSownStep(2);
+  extractSownWithAI(dataUrl);
+}
+
+function setSownStep(n) {
+  ['sown-step1','sown-step2','sown-step3'].forEach(function(id,i) {
+    var el = document.getElementById(id);
+    el.classList.remove('active','done');
+    if (i+1 < n) el.classList.add('done');
+    else if (i+1 === n) el.classList.add('active');
+  });
+}
+
+async function extractSownWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error', 'sownScanStatus'); document.getElementById('apiNotice').style.display = 'flex'; return; }
+  showStatus('Reading all rows from book — please wait...', 'info', 'sownScanStatus');
+  var base64 = dataUrl.split(',')[1];
+  var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a SOWN (volunteer group) sign in/out book page. It is a handwritten notebook with rows of volunteer entries. The columns are:\n1. Date (e.g. 13.5.26, 20/5/26, 13-5-26)\n2. Name (full name, handwritten)\n3. Start time (e.g. 9:00, 8:30, 9)\n4. Finish time (e.g. 12:00, 3:30, 11)\n5. Total hours (e.g. 3, 2.5, 3.75, may use fractions like 3½ - convert to decimal)\n\nRules:\n- Extract EVERY row with a name written in it\n- Read handwriting carefully\n- Convert hour fractions to decimals (½=0.5, ¼=0.25, ¾=0.75)\n- Use empty string for any blank field\n- total_hours must be a number or null\n- Return ONLY valid JSON array starting with [ and ending with ]:\n[{"date":"","name":"","start_time":"","finish_time":"","total_hours":null}]' }
+        ]}]
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    var data = await res.json();
+    var text = data.content.map(function(c) { return c.text||''; }).join('');
+    var jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found in response');
+    var rows = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error('No rows found');
+    sownExtractedRows = rows;
+    renderSownReviewTable(rows);
+    clearStatus('sownScanStatus');
+    setSownStep(3);
+    showStatus(rows.length + ' row' + (rows.length !== 1 ? 's' : '') + ' extracted. Edit any cell if needed, then save all.', 'success', 'sownScanStatus');
+    setTimeout(function() { clearStatus('sownScanStatus'); }, 7000);
+  } catch(e) {
+    showStatus('Extraction failed: ' + e.message + '. Add rows manually below.', 'error', 'sownScanStatus');
+    sownExtractedRows = [emptySownRow()];
+    renderSownReviewTable(sownExtractedRows);
+  }
+}
+
+function emptySownRow() { return { date:'', name:'', start_time:'', finish_time:'', total_hours:null }; }
+
+function renderSownReviewTable(rows) {
+  var tbody = document.getElementById('sownReviewBody');
+  tbody.innerHTML = '';
+  rows.forEach(function(row, i) { addSownRowToTable(row, i); });
+  updateSownRowCount();
+}
+
+function addSownRowToTable(row, i) {
+  var tbody = document.getElementById('sownReviewBody');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td class="row-num">' + (i+1) + '</td>' +
+    '<td><input type="text" value="' + esc(normaliseDate(row.date)) + '" placeholder="e.g. 20/05/2026" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.name) + '" placeholder="Full name" style="min-width:160px"></td>' +
+    '<td><input type="text" value="' + esc(row.start_time) + '" placeholder="e.g. 9:00" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.finish_time) + '" placeholder="e.g. 12:00" class="narrow"></td>' +
+    '<td><input type="number" value="' + (row.total_hours != null ? row.total_hours : '') + '" placeholder="—" class="narrow" step="0.25"></td>' +
+    '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
+  tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updateSownRowCount(); });
+  tbody.appendChild(tr);
+}
+
+function addSownRow() {
+  var tbody = document.getElementById('sownReviewBody');
+  addSownRowToTable(emptySownRow(), tbody.rows.length);
+  tbody.lastElementChild.querySelector('input').focus();
+  updateSownRowCount();
+}
+
+function updateSownRowCount() {
+  var n = document.getElementById('sownReviewBody').rows.length;
+  document.getElementById('sownRowCount').innerHTML = '<strong>' + n + '</strong> row' + (n !== 1 ? 's' : '');
+}
+
+function getSownRowsFromTable() {
+  var rows = [];
+  document.querySelectorAll('#sownReviewBody tr').forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    var name = inputs[1].value.trim();
+    if (!name) return;
+    rows.push({
+      date: normaliseDate(inputs[0].value.trim()),
+      name: name,
+      start_time: inputs[2].value.trim(),
+      finish_time: inputs[3].value.trim(),
+      total_hours: inputs[4].value === '' ? null : parseFloat(inputs[4].value)
+    });
+  });
+  return rows;
+}
+
+function normaliseDate(raw) {
+  if (!raw) return '';
+  var s = raw.toString().trim();
+  // Match patterns like 13.5.26, 13-5-26, 20/5/26, 13.05.2026 etc
+  var m = s.match(/^(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})$/);
+  if (!m) return s; // return as-is if unrecognisable
+  var day = m[1].padStart(2, '0');
+  var month = m[2].padStart(2, '0');
+  var year = m[3].length === 2 ? '20' + m[3] : m[3];
+  return day + '/' + month + '/' + year;
+}
+
+async function saveSownAll() {
+  var valid = getSownRowsFromTable();
+  if (valid.length === 0) { showStatus('Please enter at least one name.', 'error', 'sownScanStatus'); return; }
+  var btn = document.getElementById('sownSaveAllBtn');
+  btn.disabled = true;
+  showStatus('Saving ' + valid.length + ' record' + (valid.length !== 1 ? 's' : '') + '...', 'info', 'sownScanStatus');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/sown_signins', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(valid)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showStatus(valid.length + ' record' + (valid.length !== 1 ? 's' : '') + ' saved!', 'success', 'sownScanStatus');
+    setTimeout(function() { resetSownScan(); clearStatus('sownScanStatus'); }, 2500);
+  } catch(e) {
+    showStatus('Save failed: ' + e.message, 'error', 'sownScanStatus');
+    btn.disabled = false;
+  }
+}
+
+function resetSownScan() {
+  document.getElementById('sownReviewSection').style.display = 'none';
+  document.getElementById('sownCaptureCard').style.display = 'block';
+  document.getElementById('sownFileInput').value = '';
+  document.getElementById('sownSaveAllBtn').disabled = false;
+  document.getElementById('sownReviewBody').innerHTML = '';
+  sownExtractedRows = [];
+  clearStatus('sownScanStatus'); setSownStep(1);
+}
+
+async function loadSownRecords() {
+  showStatus('Loading...', 'info', 'sownRecordsStatus');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/sown_signins?order=created_at.desc&limit=1000', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    allSownRecords = await res.json();
+    clearStatus('sownRecordsStatus');
+    updateSownStats(); renderSownRecords(allSownRecords);
+  } catch(e) { showStatus('Error: ' + e.message, 'error', 'sownRecordsStatus'); }
+}
+
+function updateSownStats() {
+  document.getElementById('sownStatTotal').textContent = allSownRecords.length;
+  var wa = new Date(Date.now() - 7*24*60*60*1000);
+  document.getElementById('sownStatWeek').textContent = allSownRecords.filter(function(r) { return new Date(r.created_at) > wa; }).length;
+  var unique = new Set(allSownRecords.map(function(r) { return (r.name||'').toLowerCase().trim(); })).size;
+  document.getElementById('sownStatUnique').textContent = unique;
+}
+
+function filterSownRecords() {
+  var q = document.getElementById('sownSearchInput').value.toLowerCase();
+  renderSownRecords(q ? allSownRecords.filter(function(r) { return (r.name||'').toLowerCase().includes(q); }) : allSownRecords);
+}
+
+function renderSownRecords(records) {
+  var c = document.getElementById('sownRecordsContainer');
+  if (!records.length) {
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><p>No records found</p></div>';
+    return;
+  }
+  var html = '<div class="records-table-wrap"><table class="records-table"><thead><tr><th>Date</th><th>Name</th><th>Start time</th><th>Finish time</th><th>Total hours</th><th>Added</th><th></th></tr></thead><tbody>';
+  records.forEach(function(r) {
+    var delBtn = '<button class="rec-del-btn" data-id="' + r.id + '" data-name="' + (r.name||'this record').replace(/"/g,'&quot;') + '" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>';
+    html += '<tr>' +
+      '<td style="white-space:nowrap">' + (r.date||'—') + '</td>' +
+      '<td style="font-weight:600">' + (r.name||'—') + '</td>' +
+      '<td style="white-space:nowrap">' + (r.start_time||'—') + '</td>' +
+      '<td style="white-space:nowrap">' + (r.finish_time||'—') + '</td>' +
+      '<td style="text-align:center">' + (r.total_hours != null ? '<span class="badge badge-green">'+r.total_hours+'h</span>' : '—') + '</td>' +
+      '<td style="color:var(--text2);white-space:nowrap;font-size:12px">' + new Date(r.created_at).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}) + '</td>' +
+      '<td>' + delBtn + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  c.innerHTML = html;
+}
+</script>
+</body>
+</html>

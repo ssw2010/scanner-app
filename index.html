@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<!-- saved from url=(0061)file:///C:/Users/kwyma/Downloads/registration-scanner_12.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registration Scanner</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #1D9E75; --green-light: #E1F5EE; --green-mid: #9FE1CB; --green-dark: #0F6E56;
+  --red-light: #FAECE7; --red-dark: #993C1D;
+  --success-light: #EAF3DE; --success-dark: #3B6D11;
+  --amber-light: #FFF8E6; --amber-dark: #7A5C00; --amber-border: #EFD080;
+  --bg: #F5F5F2; --surface: #FFFFFF; --surface2: #F8F8F6;
+  --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+  --text: #1a1a18; --text2: #6b6b68; --text3: #9a9a96;
+  --radius: 10px; --radius-lg: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18; --surface: #242422; --surface2: #2e2e2c;
+    --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
+    --text: #f0f0ec; --text2: #a0a09c; --text3: #606060;
+    --green-light: #0a3026; --red-light: #3a1810; --success-light: #1a2e0a;
+    --amber-light: #2a2010; --amber-border: #6a5010;
+  }
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+/* ── LOGIN ── */
+#loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.login-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem 2rem; width: 100%; max-width: 380px; }
+.login-logo { width: 52px; height: 52px; background: var(--green); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+.login-logo svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.login-box h2 { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.login-box .sub { text-align: center; font-size: 13px; color: var(--text2); margin-bottom: 1.75rem; }
+.login-error { background: var(--red-light); color: var(--red-dark); border-radius: var(--radius); padding: 9px 12px; font-size: 13px; margin-bottom: 1rem; text-align: center; display: none; }
+.login-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 1rem; }
+.login-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+.login-group input { padding: 10px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--surface2); color: var(--text); font-size: 15px; font-family: inherit; }
+.login-group input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.15); }
+.login-btn { width: 100%; padding: 11px; background: var(--green); color: #fff; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 4px; }
+.login-btn:hover { background: var(--green-dark); }
+
+/* ── APP ── */
+#appScreen { display: none; }
+.app { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.75rem; }
+.header-icon { width: 42px; height: 42px; background: var(--green); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.header-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.header h1 { font-size: 20px; font-weight: 600; }
+.header p { font-size: 13px; color: var(--text2); margin-top: 1px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 4px; }
+.tab { flex: 1; padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text2); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; }
+.tab svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.tab:hover:not(.active) { color: var(--text); }
+.panel { display: none; }
+.panel.active { display: block; }
+.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.api-notice { background: var(--amber-light); border: 0.5px solid var(--amber-border); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--amber-dark); margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px; }
+.api-notice svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+.api-key-row { display: flex; gap: 8px; margin-top: 10px; }
+.api-key-row input { flex: 1; padding: 7px 10px; border: 0.5px solid var(--amber-border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; font-family: monospace; }
+.api-key-row input:focus { outline: none; border-color: var(--green); }
+.api-key-row button { padding: 7px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.steps { display: flex; align-items: center; margin-bottom: 1.25rem; }
+.step { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text3); flex-shrink: 0; }
+.step.active { color: var(--text); font-weight: 500; }
+.step.done { color: var(--green); }
+.step-num { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.step.done .step-num { background: var(--green); border-color: var(--green); color: #fff; }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 10px; }
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.upload-zone { border: 1.5px dashed var(--border2); border-radius: var(--radius-lg); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--surface2); user-select: none; }
+.upload-zone:hover { border-color: var(--green); background: var(--green-light); }
+.upload-zone svg { width: 32px; height: 32px; stroke: var(--green); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 10px; }
+.upload-zone strong { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.upload-zone span { font-size: 13px; color: var(--text2); }
+.preview-img { width: 100%; max-height: 260px; object-fit: contain; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--surface2); margin-bottom: 0.75rem; }
+.status { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1rem; display: none; align-items: center; gap: 9px; }
+.status.info { background: var(--green-light); color: var(--green-dark); display: flex; }
+.status.error { background: var(--red-light); color: var(--red-dark); display: flex; }
+.status.success { background: var(--success-light); color: var(--success-dark); display: flex; }
+.status svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.spinner { width: 15px; height: 15px; border: 2px solid var(--green-mid); border-top-color: var(--green-dark); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.85rem; }
+.review-table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+.review-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+.review-table th { text-align: left; padding: 8px; border-bottom: 1px solid var(--border2); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; background: var(--surface2); }
+.review-table td { padding: 5px 4px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+.review-table tr:last-child td { border-bottom: none; }
+.review-table tr:hover td { background: var(--surface2); }
+.review-table input { width: 100%; padding: 6px 8px; border: 0.5px solid transparent; border-radius: 6px; background: transparent; color: var(--text); font-size: 13px; font-family: inherit; transition: all 0.15s; min-width: 80px; }
+.review-table input:hover { border-color: var(--border2); background: var(--surface); }
+.review-table input:focus { outline: none; border-color: var(--green); background: var(--surface); box-shadow: 0 0 0 2px rgba(29,158,117,0.12); }
+.review-table input.narrow { min-width: 60px; }
+.row-num { font-size: 11px; color: var(--text3); font-weight: 600; padding: 0 8px; text-align: center; width: 28px; }
+.del-btn { padding: 4px 8px; background: transparent; border: none; cursor: pointer; color: var(--text3); border-radius: 6px; transition: all 0.15s; }
+.del-btn:hover { background: var(--red-light); color: var(--red-dark); }
+.del-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.row-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 0.75rem; flex-wrap: wrap; }
+.row-count { font-size: 13px; color: var(--text2); }
+.row-count strong { color: var(--text); }
+.btn { padding: 9px 18px; border-radius: var(--radius); border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+.btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { background: var(--green-dark); }
+.btn-primary:disabled { background: var(--green-mid); cursor: not-allowed; }
+.btn-secondary { background: var(--surface); color: var(--text); border: 0.5px solid var(--border2); }
+.btn-secondary:hover { background: var(--surface2); }
+.btn-add { background: var(--green-light); color: var(--green-dark); border: 0.5px solid var(--green-mid); }
+.btn-add:hover { background: var(--green-mid); }
+.action-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.stat { background: var(--surface2); border-radius: var(--radius); padding: 0.85rem 1rem; border: 0.5px solid var(--border); }
+.stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.stat-value { font-size: 24px; font-weight: 600; color: var(--text); margin-top: 3px; }
+.search-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+.search-row input { flex: 1; padding: 9px 11px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--surface2); color: var(--text); font-size: 14px; font-family: inherit; }
+.search-row input:focus { outline: none; border-color: var(--green); }
+.records-table-wrap { overflow-x: auto; }
+.records-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.records-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.records-table td { padding: 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+.records-table tr:last-child td { border-bottom: none; }
+.records-table tbody tr:hover td { background: var(--surface2); }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+.badge-green { background: var(--success-light); color: var(--success-dark); }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--text2); }
+.empty-state svg { width: 40px; height: 40px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 0.75rem; display: block; margin-left: auto; margin-right: auto; }
+.camera-feed { width: 100%; border-radius: var(--radius); background: #000; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.camera-btns { display: flex; gap: 8px; margin-top: 0.75rem; }
+@media (max-width: 600px) { .upload-grid { grid-template-columns: 1fr; } .stats-row { grid-template-columns: 1fr; } }
+
+/* ── DELETE MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 999; }
+.modal-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; max-width: 380px; width: 100%; }
+.modal-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--red-light); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+.modal-icon svg { width: 20px; height: 20px; stroke: var(--red-dark); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.modal-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.modal-box p { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.5; }
+.modal-box p strong { color: var(--text); }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-danger { background: #E24B4A; color: #fff; }
+.btn-danger:hover { background: #A32D2D; }
+.rec-del-btn { padding: 4px 8px; background: transparent; border: none; cursor: pointer; color: var(--text3); border-radius: 6px; transition: all 0.15s; }
+.rec-del-btn:hover { background: var(--red-light); color: var(--red-dark); }
+.rec-del-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 12h6M9 16h4"></path></svg>
+    </div>
+    <h2>Registration Scanner</h2>
+    <p class="sub">Enter the password to continue</p>
+    <div id="loginError" class="login-error">Incorrect password — please try again.</div>
+    <div class="login-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key===&#39;Enter&#39;)doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="appScreen">
+<div class="app">
+
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 12h6M9 16h4"></path></svg>
+    </div>
+    <div>
+      <h1>Registration Scanner</h1>
+      <p>Scan sign-in sheets · extract all rows · save to Supabase</p>
+    </div>
+  </div>
+
+  <div id="apiNotice" class="api-notice" style="display: none;">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <div>
+      <strong>Enter your Anthropic API key to enable AI extraction</strong><br>
+      Stored only in your browser. Get one at <a href="https://console.anthropic.com/" target="_blank" style="color:var(--green)">console.anthropic.com</a>
+      <div class="api-key-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+        <button onclick="saveApiKey()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(&#39;scan&#39;)" id="tab-scan-btn">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      Scan Sheet
+    </button>
+    <button class="tab" onclick="showTab(&#39;records&#39;)" id="tab-records-btn">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+      Records
+    </button>
+  </div>
+
+  <div id="panel-scan" class="panel active">
+    <div class="steps">
+      <div class="step active" id="step1"><div class="step-num">1</div> Capture sheet</div>
+      <div class="step-line"></div>
+      <div class="step" id="step2"><div class="step-num">2</div> Review all rows</div>
+      <div class="step-line"></div>
+      <div class="step" id="step3"><div class="step-num">3</div> Save all</div>
+    </div>
+    <div id="scanStatus" class="status"></div>
+    <div id="captureCard" class="card">
+      <p class="section-title">Photograph or upload your sign-in sheet</p>
+      <div style="background:var(--amber-light);border:0.5px solid var(--amber-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber-dark);margin-bottom:1rem;">
+        <strong>📷 Photo tips for best results:</strong> Lay the form flat &nbsp;·&nbsp; Shoot straight down from above (not at an angle) &nbsp;·&nbsp; Keep the form <strong>right-side up</strong> &nbsp;·&nbsp; Ensure good lighting with no shadows
+      </div>
+      <div class="upload-grid">
+        <div class="upload-zone" onclick="document.getElementById(&#39;fileInput&#39;).click()">
+          <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path></svg>
+          <strong>Upload photo</strong>
+          <span>Choose from your gallery</span>
+        </div>
+        <div class="upload-zone" onclick="startCamera()">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          <strong>Take photo</strong>
+          <span>Use your device camera</span>
+        </div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)">
+
+      <div id="cameraSection" style="display:none; margin-top:1rem;">
+        <video id="cameraFeed" class="camera-feed" autoplay="" playsinline=""></video>
+        <div class="camera-btns">
+          <button class="btn btn-primary" onclick="captureFrame()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg> Capture
+          </button>
+          <button class="btn btn-secondary" onclick="stopCamera()">Cancel</button>
+        </div>
+      </div>
+      <canvas id="canvas" style="display:none"></canvas>
+    </div>
+
+    <div id="reviewSection" style="display:none">
+      <div class="card">
+        <p class="section-title">Sheet preview</p>
+        <img id="previewImg" class="preview-img" alt="Form preview">
+        <button class="btn btn-secondary" onclick="resetScan()">
+          <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg> Retake
+        </button>
+      </div>
+      <div class="card">
+        <p class="section-title">Extracted records — edit any cell before saving</p>
+        <div class="review-table-wrap">
+          <table class="review-table">
+            <thead><tr>
+              <th style="width:28px">#</th>
+              <th>Participant name</th><th>Initial</th><th>Phone</th><th>Email</th>
+              <th>Start</th><th>Finish</th><th>Hours</th><th>Emergency contact</th><th></th>
+            </tr></thead>
+            <tbody id="reviewBody"></tbody>
+          </table>
+        </div>
+        <div class="row-actions">
+          <button class="btn btn-add" onclick="addRow()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Add row
+          </button>
+          <span class="row-count" id="rowCount"></span>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-secondary" onclick="resetScan()">Cancel</button>
+          <button class="btn btn-primary" id="saveAllBtn" onclick="saveAll()">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Save all to database
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-records" class="panel">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Total records</div><div class="stat-value" id="statTotal">0</div></div>
+      <div class="stat"><div class="stat-label">This week</div><div class="stat-value" id="statWeek">0</div></div>
+      <div class="stat"><div class="stat-label">Avg hours</div><div class="stat-value" id="statHours">0</div></div>
+    </div>
+    <div class="card" style="padding:1rem">
+      <div class="search-row">
+        <input type="text" id="searchInput" placeholder="Search by name or email..." oninput="filterRecords()">
+        <button class="btn btn-secondary" onclick="loadRecords()">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg> Refresh
+        </button>
+      </div>
+      <div id="recordsStatus" class="status"></div>
+      <div id="recordsContainer">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          <p>Click refresh to load records</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+    </div>
+    <h3>Delete record?</h3>
+    <p>You are about to permanently delete <strong id="deleteRecordName"></strong>. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+        Delete permanently
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ijjiqmelehzrvigmwvbs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_PXemVyoq1dpWjjOPJFD0tg_AAKEf2eA';
+const APP_PASSWORD = 'SOWN2026!';
+let allRecords = [], cameraStream = null, extractedRows = [];
+
+// ── LOGIN ──
+function doLogin() {
+  const val = document.getElementById('loginPassword').value;
+  if (val === APP_PASSWORD) {
+    sessionStorage.setItem('loggedIn', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  }
+}
+
+// ── INIT ──
+window.addEventListener('load', function() {
+  if (sessionStorage.getItem('loggedIn') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+  }
+  var k = localStorage.getItem('anthropic_api_key');
+  if (k) document.getElementById('apiNotice').style.display = 'none';
+});
+
+// ── API KEY ──
+function getApiKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+function saveApiKey() {
+  var k = document.getElementById('apiKeyInput').value.trim();
+  if (!k.startsWith('sk-ant-')) { alert('Invalid key - should start with sk-ant-'); return; }
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('apiNotice').style.display = 'none';
+  alert('API key saved!');
+}
+
+// ── TABS ──
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('tab-' + name + '-btn').classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'records') loadRecords();
+}
+
+// ── STEPS ──
+function setStep(n) {
+  ['step1','step2','step3'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    el.classList.remove('active','done');
+    if (i+1 < n) el.classList.add('done');
+    else if (i+1 === n) el.classList.add('active');
+  });
+}
+
+// ── STATUS ──
+function showStatus(msg, type, id) {
+  id = id || 'scanStatus';
+  var el = document.getElementById(id);
+  el.className = 'status ' + type;
+  var icon = type === 'info' ? '<div class="spinner"></div>'
+    : type === 'success' ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  el.innerHTML = icon + '<span>' + msg + '</span>';
+}
+function clearStatus(id) { document.getElementById(id||'scanStatus').className = 'status'; }
+
+// ── FILE / CAMERA ──
+function handleFile(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) { processImage(ev.target.result); };
+  r.readAsDataURL(f);
+}
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function(s) { cameraStream = s; document.getElementById('cameraFeed').srcObject = s; document.getElementById('cameraSection').style.display = 'block'; })
+    .catch(function() { showStatus('Camera access denied. Use the upload option.', 'error'); });
+}
+function stopCamera() {
+  if (cameraStream) { cameraStream.getTracks().forEach(function(t) { t.stop(); }); cameraStream = null; }
+  document.getElementById('cameraSection').style.display = 'none';
+}
+function captureFrame() {
+  var v = document.getElementById('cameraFeed'), c = document.getElementById('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  stopCamera(); processImage(c.toDataURL('image/jpeg', 0.92));
+}
+function processImage(dataUrl) {
+  document.getElementById('previewImg').src = dataUrl;
+  document.getElementById('captureCard').style.display = 'none';
+  document.getElementById('reviewSection').style.display = 'block';
+  setStep(2);
+  extractWithAI(dataUrl);
+}
+
+// ── AI EXTRACTION ──
+async function extractWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error'); document.getElementById('apiNotice').style.display = 'flex'; return; }
+  showStatus('Reading all rows from sheet — please wait...', 'info');
+  var base64 = dataUrl.split(',')[1];
+  var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a Brisbane City Council volunteer sign-in sheet. It may be rotated - reorient as needed. It has numbered rows and 7 columns left-to-right:\n1. Participant name\n2. Initial\n3. Start time\n4. Finish time\n5. Total hours worked\n6. Email address and/or Phone number (@ = email, digits = phone)\n7. Contact in case of emergency\n\nExtract every row with a name. Return ONLY this JSON array structure, starting with [ and ending with ]:\n[{"participant_name":"","initial":"","start_time":"","finish_time":"","total_hours_worked":null,"email_address":"","phone_number":"","emergency_contact":""}]' }
+        ]}]
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    var data = await res.json();
+    var text = data.content.map(function(c) { return c.text||''; }).join('');
+    // Extract JSON array even if AI adds surrounding text
+    var jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found in response');
+    var rows = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error('No rows found');
+    extractedRows = rows;
+    renderReviewTable(rows);
+    clearStatus();
+    setStep(3);
+    showStatus(rows.length + ' row' + (rows.length !== 1 ? 's' : '') + ' extracted. Edit any cell if needed, then save all.', 'success');
+    setTimeout(function() { clearStatus(); }, 7000);
+  } catch(e) {
+    showStatus('Extraction failed: ' + e.message + '. Add rows manually below.', 'error');
+    extractedRows = [emptyRow()];
+    renderReviewTable(extractedRows);
+  }
+}
+
+function emptyRow() { return { participant_name:'', initial:'', phone_number:'', email_address:'', start_time:'', finish_time:'', total_hours_worked:null, emergency_contact:'' }; }
+function esc(v) { return (v||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderReviewTable(rows) {
+  var tbody = document.getElementById('reviewBody');
+  tbody.innerHTML = '';
+  rows.forEach(function(row, i) { addRowToTable(row, i); });
+  updateRowCount();
+}
+
+function addRowToTable(row, i) {
+  var tbody = document.getElementById('reviewBody');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td class="row-num">' + (i+1) + '</td>' +
+    '<td><input type="text" value="' + esc(row.participant_name) + '" placeholder="Name"></td>' +
+    '<td><input type="text" value="' + esc(row.initial) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.phone_number) + '" placeholder="—"></td>' +
+    '<td><input type="text" value="' + esc(row.email_address) + '" placeholder="—"></td>' +
+    '<td><input type="text" value="' + esc(row.start_time) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="text" value="' + esc(row.finish_time) + '" placeholder="—" class="narrow"></td>' +
+    '<td><input type="number" value="' + (row.total_hours_worked != null ? row.total_hours_worked : '') + '" placeholder="—" class="narrow" step="0.5"></td>' +
+    '<td><input type="text" value="' + esc(row.emergency_contact) + '" placeholder="—"></td>' +
+    '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
+  tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updateRowCount(); });
+  tbody.appendChild(tr);
+}
+
+function addRow() {
+  var tbody = document.getElementById('reviewBody');
+  addRowToTable(emptyRow(), tbody.rows.length);
+  tbody.lastElementChild.querySelector('input').focus();
+  updateRowCount();
+}
+
+function updateRowCount() {
+  var n = document.getElementById('reviewBody').rows.length;
+  document.getElementById('rowCount').innerHTML = '<strong>' + n + '</strong> row' + (n !== 1 ? 's' : '');
+}
+
+function getRowsFromTable() {
+  var rows = [];
+  document.querySelectorAll('#reviewBody tr').forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    var name = inputs[0].value.trim();
+    if (!name) return;
+    rows.push({
+      participant_name: name,
+      initial: inputs[1].value.trim(),
+      phone_number: inputs[2].value.trim(),
+      email_address: inputs[3].value.trim(),
+      start_time: inputs[4].value.trim(),
+      finish_time: inputs[5].value.trim(),
+      total_hours_worked: inputs[6].value === '' ? null : parseFloat(inputs[6].value),
+      emergency_contact: inputs[7].value.trim()
+    });
+  });
+  return rows;
+}
+
+async function saveAll() {
+  var valid = getRowsFromTable();
+  if (valid.length === 0) { showStatus('Please enter at least one participant name.', 'error'); return; }
+  var btn = document.getElementById('saveAllBtn');
+  btn.disabled = true;
+  showStatus('Saving ' + valid.length + ' record' + (valid.length !== 1 ? 's' : '') + '...', 'info');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/registrations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(valid)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showStatus(valid.length + ' record' + (valid.length !== 1 ? 's' : '') + ' saved!', 'success');
+    setTimeout(function() { resetScan(); clearStatus(); }, 2500);
+  } catch(e) {
+    showStatus('Save failed: ' + e.message, 'error');
+    btn.disabled = false;
+  }
+}
+
+function resetScan() {
+  document.getElementById('reviewSection').style.display = 'none';
+  document.getElementById('captureCard').style.display = 'block';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('saveAllBtn').disabled = false;
+  document.getElementById('reviewBody').innerHTML = '';
+  extractedRows = [];
+  clearStatus(); setStep(1);
+}
+
+// ── RECORDS ──
+async function loadRecords() {
+  showStatus('Loading...', 'info', 'recordsStatus');
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/registrations?order=created_at.desc&limit=500', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    allRecords = await res.json();
+    clearStatus('recordsStatus');
+    updateStats(); renderRecords(allRecords);
+  } catch(e) { showStatus('Error: ' + e.message, 'error', 'recordsStatus'); }
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allRecords.length;
+  var wa = new Date(Date.now() - 7*24*60*60*1000);
+  document.getElementById('statWeek').textContent = allRecords.filter(function(r) { return new Date(r.created_at) > wa; }).length;
+  var wh = allRecords.filter(function(r) { return r.total_hours_worked != null; });
+  var avg = wh.length ? wh.reduce(function(s,r) { return s + Number(r.total_hours_worked); }, 0) / wh.length : 0;
+  document.getElementById('statHours').textContent = avg ? avg.toFixed(1) : '0';
+}
+
+function filterRecords() {
+  var q = document.getElementById('searchInput').value.toLowerCase();
+  renderRecords(q ? allRecords.filter(function(r) { return (r.participant_name||'').toLowerCase().includes(q) || (r.email_address||'').toLowerCase().includes(q); }) : allRecords);
+}
+
+function renderRecords(records) {
+  var c = document.getElementById('recordsContainer');
+  if (!records.length) {
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><p>No records found</p></div>';
+    return;
+  }
+  var html = '<div class="records-table-wrap"><table class="records-table"><thead><tr><th>Participant name</th><th>Initial</th><th>Start time</th><th>Finish time</th><th>Total hours</th><th>Email address</th><th>Phone number</th><th>Contact in case of emergency</th><th>Date added</th><th></th></tr></thead><tbody>';
+  records.forEach(function(r) {
+    html += '<tr>' +
+      '<td style="font-weight:600;white-space:nowrap">' + (r.participant_name||'—') + '</td>' +
+      '<td style="text-align:center">' + (r.initial||'—') + '</td>' +
+      '<td style="white-space:nowrap">' + (r.start_time||'—') + '</td>' +
+      '<td style="white-space:nowrap">' + (r.finish_time||'—') + '</td>' +
+      '<td style="text-align:center">' + (r.total_hours_worked != null ? '<span class="badge badge-green">'+r.total_hours_worked+'h</span>' : '—') + '</td>' +
+      '<td style="font-size:12px;color:var(--text2)">' + (r.email_address||'—') + '</td>' +
+      '<td style="white-space:nowrap">' + (r.phone_number||'—') + '</td>' +
+      '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">' + (r.emergency_contact||'—') + '</td>' +
+      '<td style="color:var(--text2);white-space:nowrap;font-size:12px">' + new Date(r.created_at).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}) + '</td>' +
+      '<td><button class="rec-del-btn" onclick="openDeleteModal(\'' + r.id + '\',\'' + (r.participant_name||'this record').replace(/'/g,"\\'") + '\')" title="Delete record"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  c.innerHTML = html;
+}
+
+// ── DELETE ──
+var pendingDeleteId = null;
+
+function openDeleteModal(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('deleteRecordName').textContent = name;
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  var btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/registrations?id=eq.' + pendingDeleteId, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    closeDeleteModal();
+    loadRecords();
+  } catch(e) {
+    alert('Delete failed: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete permanently';
+  }
+}
+
+// Close modal if clicking outside
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+</script>
+
+
+</body></html>
