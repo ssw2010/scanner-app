@@ -287,7 +287,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </button>
   </div>
 
-  <!-- API key is now handled server-side via Vercel environment variable -->
+  <div id="apiNotice" class="api-notice" style="display: none;">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <div>
+      <strong>Enter your Anthropic API key to enable AI extraction</strong><br>
+      Stored only in your browser. Get one at <a href="https://console.anthropic.com/" target="_blank" style="color:var(--green)">console.anthropic.com</a>
+      <div class="api-key-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+        <button onclick="saveApiKey()">Save</button>
+      </div>
+    </div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="showTab(&#39;dashboard&#39;)" id="tab-dashboard-btn">
@@ -704,7 +714,19 @@ window.addEventListener('load', async function() {
     if (ok) { showApp(); }
     else { sessionStorage.removeItem('sb_token'); sessionStorage.removeItem('sb_refresh'); }
   }
+  var k = localStorage.getItem('anthropic_api_key');
+  if (k) document.getElementById('apiNotice').style.display = 'none';
 });
+
+// ── API KEY ──
+function getApiKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+function saveApiKey() {
+  var k = document.getElementById('apiKeyInput').value.trim();
+  if (!k.startsWith('sk-ant-')) { alert('Invalid key - should start with sk-ant-'); return; }
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('apiNotice').style.display = 'none';
+  alert('API key saved!');
+}
 
 // ── TABS ── (see showTab in dashboard section)
 
@@ -762,13 +784,15 @@ function processImage(dataUrl) {
 
 // ── AI EXTRACTION ──
 async function extractWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error'); document.getElementById('apiNotice').style.display = 'flex'; return; }
   showStatus('Reading all rows from sheet — please wait...', 'info');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('/api/extract', {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
@@ -1132,13 +1156,15 @@ function processPoImage(dataUrl) {
 }
 
 async function extractPoWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error', 'plantsOutStatus'); return; }
   showStatus('Reading all rows from form — please wait...', 'info', 'plantsOutStatus');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('/api/extract', {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
