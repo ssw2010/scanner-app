@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- saved from url=(0037)https://scanner-app-lemon.vercel.app/ -->
+<!-- saved from url=(0060)file:///C:/Users/kwyma/Downloads/SOWN_Data_Management_8.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SOWN Data Management</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&amp;family=Cormorant+Garamond:wght@300;400&amp;display=swap" rel="stylesheet">
+<link href="file:///C:/Users/kwyma/Downloads/SOWN%20Data%20Management_files/css2" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -156,12 +156,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .lb-bar-fill { height: 100%; background: linear-gradient(90deg, #3d7a2b, #7ab648); border-radius: 99px; transition: width 0.4s ease; }
 .lb-hours { font-size: 13px; font-weight: 600; color: var(--green); white-space: nowrap; width: 50px; text-align: right; flex-shrink: 0; }
 
+/* ── CONFIDENCE HIGHLIGHTS ── */
+.conf-medium input { background: #fdf6e9 !important; border-color: #d4b87a !important; }
+.conf-low input { background: #faece7 !important; border-color: #e08060 !important; }
+@media (prefers-color-scheme: dark) {
+  .conf-medium input { background: #2a2010 !important; border-color: #6a5010 !important; }
+  .conf-low input { background: #3a1810 !important; border-color: #8a3820 !important; }
+}
+.conf-legend { display:flex; align-items:center; gap:14px; font-size:12px; color:var(--text2); margin-bottom:0.75rem; flex-wrap:wrap; }
+.conf-legend-item { display:flex; align-items:center; gap:5px; }
+.conf-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.conf-dot-medium { background:#d4b87a; }
+.conf-dot-low { background:#e08060; }
+
 /* ── CHARTS ── */
-.chart-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
-.chart-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
-.chart-wrap { width: 100%; overflow-x: auto; }
-.chart-svg { display: block; width: 100%; min-width: 380px; }
-@media (max-width: 700px) { #chartsGrid { grid-template-columns: 1fr !important; } }
+.chart-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1.25rem 1.5rem; }
+.chart-title { font-size:12px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem; }
+.chart-wrap { width:100%; overflow-x:auto; }
+.chart-svg { display:block; width:100%; min-width:380px; }
+@media (max-width:700px) { #chartsGrid { grid-template-columns:1fr !important; } }
 
 /* ── INACTIVITY WARNING MODAL ── */
 #inactivityModal { z-index: 1000; }
@@ -294,17 +307,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </button>
   </div>
 
-  <div id="apiNotice" class="api-notice" style="display: none;">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-    <div>
-      <strong>Enter your Anthropic API key to enable AI extraction</strong><br>
-      Stored only in your browser. Get one at <a href="https://console.anthropic.com/" target="_blank" style="color:var(--green)">console.anthropic.com</a>
-      <div class="api-key-row">
-        <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
-        <button onclick="saveApiKey()">Save</button>
-      </div>
-    </div>
-  </div>
+  <!-- API key handled server-side via Vercel environment variable -->
 
   <div class="tabs">
     <button class="tab active" onclick="showTab(&#39;dashboard&#39;)" id="tab-dashboard-btn">
@@ -363,6 +366,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </div>
   </div>
 
+  <!-- Charts -->
   <div id="chartsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
     <div class="chart-card">
       <p class="chart-title">📅 Volunteer hours by month</p>
@@ -428,6 +432,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </div>
     <div class="card">
       <p class="section-title">Extracted records — edit any cell before saving</p>
+      <div class="conf-legend">
+        <span class="conf-legend-item"><span class="conf-dot conf-dot-medium"></span> Double-check</span>
+        <span class="conf-legend-item"><span class="conf-dot conf-dot-low"></span> Likely wrong — please verify</span>
+      </div>
       <div class="review-table-wrap">
         <table class="review-table">
           <thead><tr>
@@ -456,9 +464,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 <!-- NURSERY HOURS RECORDS PANEL -->
 <div id="panel-sown-records" class="panel">
   <div class="stats-row">
-    <div class="stat"><div class="stat-label">Total entries</div><div class="stat-value" id="sownStatTotal">34</div></div>
+    <div class="stat"><div class="stat-label">Total entries</div><div class="stat-value" id="sownStatTotal">0</div></div>
     <div class="stat"><div class="stat-label">This week</div><div class="stat-value" id="sownStatWeek">0</div></div>
-    <div class="stat"><div class="stat-label">Unique volunteers</div><div class="stat-value" id="sownStatUnique">32</div></div>
+    <div class="stat"><div class="stat-label">Unique volunteers</div><div class="stat-value" id="sownStatUnique">0</div></div>
   </div>
   <div class="card" style="padding:1rem">
     <div class="search-row">
@@ -467,8 +475,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
         <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg> Refresh
       </button>
     </div>
-    <div id="sownRecordsStatus" class="status"><div class="spinner"></div><span>Loading...</span></div>
-    <div id="sownRecordsContainer"><div class="records-table-wrap"><table class="records-table"><thead><tr><th>Date</th><th>Name</th><th>Start time</th><th>Finish time</th><th>Total hours</th><th>Added</th><th></th></tr></thead><tbody><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Barbara Bollen</td><td style="white-space:nowrap">9.00</td><td style="white-space:nowrap">12.00</td><td style="text-align:center"><span class="badge badge-green">3h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="966b4e0f-5f53-4396-91b5-75ada4c7941d" data-name="Barbara Bollen" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Nicki Shiley</td><td style="white-space:nowrap">9.00</td><td style="white-space:nowrap">12.00</td><td style="text-align:center"><span class="badge badge-green">3h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="ac05d25e-26e1-44e0-adc4-57138699d283" data-name="Nicki Shiley" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">P. Gibbs</td><td style="white-space:nowrap">9</td><td style="white-space:nowrap">11</td><td style="text-align:center"><span class="badge badge-green">2h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="0a28f7dd-39bb-4bd5-a865-c2d4b51bb7d2" data-name="P. Gibbs" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Anne-Marie Troster</td><td style="white-space:nowrap">9.05</td><td style="white-space:nowrap">12.05</td><td style="text-align:center"><span class="badge badge-green">3h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="caad6e9c-3249-44a1-89c0-802428307eb1" data-name="Anne-Marie Troster" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">18/05/2026</td><td style="font-weight:600">William Pudwell</td><td style="white-space:nowrap">9</td><td style="white-space:nowrap">12.05</td><td style="text-align:center"><span class="badge badge-green">3h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="f2ca77dd-e4f0-4485-b522-d2d7390d555b" data-name="William Pudwell" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Lynette Richards</td><td style="white-space:nowrap">3.10</td><td style="white-space:nowrap">12h10</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="d229b175-e12a-4ee0-a6ad-609573e26991" data-name="Lynette Richards" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">John Irwin</td><td style="white-space:nowrap">3.10</td><td style="white-space:nowrap">12h10</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="69fff99c-5441-4fb1-87f6-a5fdc7840935" data-name="John Irwin" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Glenn James</td><td style="white-space:nowrap">10.10</td><td style="white-space:nowrap">1.10</td><td style="text-align:center"><span class="badge badge-green">3h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="81016ab3-193c-4aee-8a0d-64dd8b955a4c" data-name="Glenn James" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Chris Galbraith</td><td style="white-space:nowrap">9.15</td><td style="white-space:nowrap">1</td><td style="text-align:center"><span class="badge badge-green">3.75h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="5216e714-e002-4a1e-b122-b2027635bc97" data-name="Chris Galbraith" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Lynn Green</td><td style="white-space:nowrap">8.30</td><td style="white-space:nowrap">3.30</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="d090e980-a025-4d69-bc13-1d128d8b99cb" data-name="Lynn Green" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">D. Swan</td><td style="white-space:nowrap">1.15</td><td style="white-space:nowrap">3.30</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="89bcce0a-0037-4155-bc7d-4dddf916b6ea" data-name="D. Swan" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">16/05/2026</td><td style="font-weight:600">Dean Wynn</td><td style="white-space:nowrap">9</td><td style="white-space:nowrap">11</td><td style="text-align:center"><span class="badge badge-green">2h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="00473d83-adec-45b7-80ab-40292e3c63fc" data-name="Dean Wynn" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">16/05/2026</td><td style="font-weight:600">David Matthews</td><td style="white-space:nowrap">9</td><td style="white-space:nowrap">11</td><td style="text-align:center"><span class="badge badge-green">2h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="a72764e1-46e2-48d9-8057-2a3201dc4254" data-name="David Matthews" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">13/05/2026</td><td style="font-weight:600">Deb Wyatt</td><td style="white-space:nowrap">9.30</td><td style="white-space:nowrap">11.30</td><td style="text-align:center"><span class="badge badge-green">2h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="2304d72e-8bd2-49de-b2d8-0c3959b69392" data-name="Deb Wyatt" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">19/05/2026</td><td style="font-weight:600">Carmel Carstensen</td><td style="white-space:nowrap">9.30</td><td style="white-space:nowrap">11.30</td><td style="text-align:center"><span class="badge badge-green">2h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="bb6f4a7b-4621-4149-8607-bcad867fe3e0" data-name="Carmel Carstensen" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Rob Jamieson</td><td style="white-space:nowrap">6.40</td><td style="white-space:nowrap">11.15</td><td style="text-align:center"><span class="badge badge-green">4.5h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="7239dd5f-bef2-49df-b7a6-88ba71ffce0e" data-name="Rob Jamieson" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Ann Spawulet</td><td style="white-space:nowrap">8.15</td><td style="white-space:nowrap">11.15</td><td style="text-align:center"><span class="badge badge-green">3h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="3ddcdb9e-868e-4e51-b472-a18c6201f2e6" data-name="Ann Spawulet" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Russ Hopper</td><td style="white-space:nowrap">8.30</td><td style="white-space:nowrap">11.00</td><td style="text-align:center"><span class="badge badge-green">2.5h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="0e9625d4-0f98-47cf-b376-e3b7012847b4" data-name="Russ Hopper" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Barbara Bakken</td><td style="white-space:nowrap">9.00</td><td style="white-space:nowrap">12.00</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="7d13a596-b663-4ce6-b75a-937d8870a5c5" data-name="Barbara Bakken" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Vicki Shiley</td><td style="white-space:nowrap">9.00</td><td style="white-space:nowrap">—</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="76534738-6a84-4c6e-8939-a0efe639bf83" data-name="Vicki Shiley" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Patricia Hurst</td><td style="white-space:nowrap">9.00</td><td style="white-space:nowrap">12.00</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="437a7992-a06a-4c3b-92b1-ddb1481c0a68" data-name="Patricia Hurst" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Eric Heath</td><td style="white-space:nowrap">9.00</td><td style="white-space:nowrap">12.00</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="b8c18ae8-9b7c-4251-8734-25b9e31cc1a9" data-name="Eric Heath" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Lisa Nisbet Tom Pudwell</td><td style="white-space:nowrap">9.30</td><td style="white-space:nowrap">12-</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="eddfddbd-aa63-4ca9-8cea-fc794cc266f0" data-name="Lisa Nisbet Tom Pudwell" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Mark Riley</td><td style="white-space:nowrap">9.30</td><td style="white-space:nowrap">12.00</td><td style="text-align:center"><span class="badge badge-green">2.5h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="573e0787-86ff-4dfe-95a7-160bfb6e7442" data-name="Mark Riley" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">P. Gibbs</td><td style="white-space:nowrap">8.30</td><td style="white-space:nowrap">12</td><td style="text-align:center"><span class="badge badge-green">3.5h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="e71a9c54-bbf7-46aa-9bf9-f0736f49f8ab" data-name="P. Gibbs" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">C Simpson</td><td style="white-space:nowrap">10.30</td><td style="white-space:nowrap">12.30</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="96f1c3a5-119e-4fbd-a10c-de91a0694301" data-name="C Simpson" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Maria M-Blue</td><td style="white-space:nowrap">10.30AM</td><td style="white-space:nowrap">12.30</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="b797d1db-3e1a-4c50-b2e4-485cbfb536e6" data-name="Maria M-Blue" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">16/05/2026</td><td style="font-weight:600">Jenny C</td><td style="white-space:nowrap">5.50</td><td style="white-space:nowrap">11.15</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="24708329-1c98-42f6-a98c-20b3db13f4c0" data-name="Jenny C" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Harley Farley</td><td style="white-space:nowrap">10.45</td><td style="white-space:nowrap">12.15</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="9e59777b-32ef-4671-9a29-56a086bffc89" data-name="Harley Farley" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">John Rohde</td><td style="white-space:nowrap">11.30</td><td style="white-space:nowrap">1.20</td><td style="text-align:center"><span class="badge badge-green">1.75h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="ce896725-d915-41a1-a72b-2727bebfd7ff" data-name="John Rohde" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Chris Galbraith</td><td style="white-space:nowrap">8.45</td><td style="white-space:nowrap">12.15</td><td style="text-align:center"><span class="badge badge-green">3.5h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="8c490ded-ad55-4a7d-bf35-59ac7d3d6289" data-name="Chris Galbraith" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Lynn Swan</td><td style="white-space:nowrap">8.30</td><td style="white-space:nowrap">3.30</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="85d970a5-f348-48d6-a28f-50e423910e0e" data-name="Lynn Swan" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">20/05/2026</td><td style="font-weight:600">Di Swan</td><td style="white-space:nowrap">1.15</td><td style="white-space:nowrap">3.30</td><td style="text-align:center">—</td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="ad9f706e-8974-4520-a9db-8397e04e2656" data-name="Di Swan" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr><tr><td style="white-space:nowrap">27/05/2026</td><td style="font-weight:600">C Rob</td><td style="white-space:nowrap">10.00</td><td style="white-space:nowrap">12.5</td><td style="text-align:center"><span class="badge badge-green">1.5h</span></td><td style="color:var(--text2);white-space:nowrap;font-size:12px">21 May 2026</td><td><button class="rec-del-btn" data-id="48f6cf04-4184-4aa2-9d5b-2b09d453e455" data-name="C Rob" data-sown="true" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg></button></td></tr></tbody></table></div></div>
+    <div id="sownRecordsStatus" class="status"></div>
+    <div id="sownRecordsContainer">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+        <p>Click refresh to load records</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -520,6 +533,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </div>
     <div class="card">
       <p class="section-title">Extracted records — edit any cell before saving</p>
+      <div class="conf-legend">
+        <span class="conf-legend-item"><span class="conf-dot conf-dot-medium"></span> Double-check</span>
+        <span class="conf-legend-item"><span class="conf-dot conf-dot-low"></span> Likely wrong — please verify</span>
+      </div>
       <div class="review-table-wrap">
         <table class="review-table">
           <thead><tr>
@@ -732,19 +749,7 @@ window.addEventListener('load', async function() {
     if (ok) { showApp(); }
     else { sessionStorage.removeItem('sb_token'); sessionStorage.removeItem('sb_refresh'); }
   }
-  var k = localStorage.getItem('anthropic_api_key');
-  if (k) document.getElementById('apiNotice').style.display = 'none';
 });
-
-// ── API KEY ──
-function getApiKey() { return localStorage.getItem('anthropic_api_key') || ''; }
-function saveApiKey() {
-  var k = document.getElementById('apiKeyInput').value.trim();
-  if (!k.startsWith('sk-ant-')) { alert('Invalid key - should start with sk-ant-'); return; }
-  localStorage.setItem('anthropic_api_key', k);
-  document.getElementById('apiNotice').style.display = 'none';
-  alert('API key saved!');
-}
 
 // ── TABS ── (see showTab in dashboard section)
 
@@ -800,23 +805,21 @@ function processImage(dataUrl) {
   extractWithAI(dataUrl);
 }
 
-// ── AI EXTRACTION ──
+// ── AI EXTRACTION (BCC sign-in sheet) ──
 async function extractWithAI(dataUrl) {
-  var apiKey = getApiKey();
-  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error'); document.getElementById('apiNotice').style.display = 'flex'; return; }
   showStatus('Reading all rows from sheet — please wait...', 'info');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
+    var res = await fetch('/api/extract', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a Brisbane City Council volunteer sign-in sheet. It may be rotated - reorient as needed. It has numbered rows and 7 columns left-to-right:\n1. Participant name\n2. Initial\n3. Start time\n4. Finish time\n5. Total hours worked\n6. Email address and/or Phone number (@ = email, digits = phone)\n7. Contact in case of emergency\n\nExtract every row with a name. Return ONLY this JSON array structure, starting with [ and ending with ]:\n[{"participant_name":"","initial":"","start_time":"","finish_time":"","total_hours_worked":null,"email_address":"","phone_number":"","emergency_contact":""}]' }
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a Brisbane City Council volunteer sign-in sheet. It may be rotated - reorient as needed. It has numbered rows and 7 columns left-to-right:\n1. Participant name\n2. Initial\n3. Start time\n4. Finish time\n5. Total hours worked\n6. Email address and/or Phone number (@ = email, digits = phone)\n7. Contact in case of emergency\n\nExtract every row with a name. For each field also include a confidence score: "high" (clearly legible), "medium" (somewhat unclear), or "low" (hard to read or guessed).\n\nReturn ONLY this JSON array structure, starting with [ and ending with ]:\n[{"participant_name":"","participant_name_conf":"high","initial":"","initial_conf":"high","start_time":"","start_time_conf":"high","finish_time":"","finish_time_conf":"high","total_hours_worked":null,"total_hours_worked_conf":"high","email_address":"","email_address_conf":"high","phone_number":"","phone_number_conf":"high","emergency_contact":"","emergency_contact_conf":"high"}]' }
         ]}]
       })
     });
@@ -851,19 +854,21 @@ function renderReviewTable(rows) {
   updateRowCount();
 }
 
+function confClass(v) { return v==='low'?' conf-low':v==='medium'?' conf-medium':''; }
+
 function addRowToTable(row, i) {
   var tbody = document.getElementById('reviewBody');
   var tr = document.createElement('tr');
   tr.innerHTML =
     '<td class="row-num">' + (i+1) + '</td>' +
-    '<td><input type="text" value="' + esc(row.participant_name) + '" placeholder="Name"></td>' +
-    '<td><input type="text" value="' + esc(row.initial) + '" placeholder="—" class="narrow"></td>' +
-    '<td><input type="text" value="' + esc(row.phone_number) + '" placeholder="—"></td>' +
-    '<td><input type="text" value="' + esc(row.email_address) + '" placeholder="—"></td>' +
-    '<td><input type="text" value="' + esc(row.start_time) + '" placeholder="—" class="narrow"></td>' +
-    '<td><input type="text" value="' + esc(row.finish_time) + '" placeholder="—" class="narrow"></td>' +
-    '<td><input type="number" value="' + (row.total_hours_worked != null ? row.total_hours_worked : '') + '" placeholder="—" class="narrow" step="0.5"></td>' +
-    '<td><input type="text" value="' + esc(row.emergency_contact) + '" placeholder="—"></td>' +
+    '<td class="' + confClass(row.participant_name_conf) + '"><input type="text" value="' + esc(row.participant_name) + '" placeholder="Name"></td>' +
+    '<td class="' + confClass(row.initial_conf) + '"><input type="text" value="' + esc(row.initial) + '" placeholder="—" class="narrow"></td>' +
+    '<td class="' + confClass(row.phone_number_conf) + '"><input type="text" value="' + esc(row.phone_number) + '" placeholder="—"></td>' +
+    '<td class="' + confClass(row.email_address_conf) + '"><input type="text" value="' + esc(row.email_address) + '" placeholder="—"></td>' +
+    '<td class="' + confClass(row.start_time_conf) + '"><input type="text" value="' + esc(row.start_time) + '" placeholder="—" class="narrow"></td>' +
+    '<td class="' + confClass(row.finish_time_conf) + '"><input type="text" value="' + esc(row.finish_time) + '" placeholder="—" class="narrow"></td>' +
+    '<td class="' + confClass(row.total_hours_worked_conf) + '"><input type="number" value="' + (row.total_hours_worked != null ? row.total_hours_worked : '') + '" placeholder="—" class="narrow" step="0.5"></td>' +
+    '<td class="' + confClass(row.emergency_contact_conf) + '"><input type="text" value="' + esc(row.emergency_contact) + '" placeholder="—"></td>' +
     '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
   tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updateRowCount(); });
   tbody.appendChild(tr);
@@ -1139,6 +1144,7 @@ function renderBarChart(containerId, data, unit, colorDark, colorLight) {
   var cW = W - pL - pR, cH = H - pT - pB;
   var slotW = cW / n, barW = Math.max(8, Math.floor(slotW * 0.55));
   var gradId = containerId + 'G';
+  var now = new Date();
 
   if (maxVal === 0) {
     el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart-svg" xmlns="http://www.w3.org/2000/svg">' +
@@ -1146,7 +1152,6 @@ function renderBarChart(containerId, data, unit, colorDark, colorLight) {
     return;
   }
 
-  // Grid lines + y labels
   var grid = '', yLbls = '';
   for (var g = 0; g <= 4; g++) {
     var yv = maxVal * g / 4;
@@ -1157,9 +1162,7 @@ function renderBarChart(containerId, data, unit, colorDark, colorLight) {
     yLbls += '<text x="' + (pL-4) + '" y="' + (yp+3) + '" text-anchor="end" font-size="9" fill="var(--text3)" font-family="system-ui,sans-serif">' + yl + '</text>';
   }
 
-  // Bars + x labels
   var bars = '', xLbls = '';
-  var now = new Date();
   data.forEach(function(d, i) {
     var bh = maxVal > 0 ? (d.value / maxVal * cH) : 0;
     var x = pL + slotW * i + (slotW - barW) / 2;
@@ -1178,10 +1181,12 @@ function renderBarChart(containerId, data, unit, colorDark, colorLight) {
   el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart-svg" xmlns="http://www.w3.org/2000/svg">' +
     '<defs>' +
     '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + colorLight + '"/><stop offset="100%" stop-color="' + colorDark + '"/></linearGradient>' +
-    '<linearGradient id="' + gradId + 'A" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + colorLight + '" stop-opacity="0.9"/><stop offset="100%" stop-color="' + colorDark + '"/></linearGradient>' +
+    '<linearGradient id="' + gradId + 'A" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + colorLight + '" stop-opacity="0.85"/><stop offset="100%" stop-color="' + colorDark + '"/></linearGradient>' +
     '</defs>' +
     grid + yLbls + bars + xLbls + '</svg>';
 }
+
+function setPlantCard(id, value, sub) {
   var el = document.getElementById('dv-' + id);
   if (el) el.innerHTML = value + '<span> plants</span>';
   var s = document.getElementById('ds-' + id);
@@ -1245,21 +1250,19 @@ function processPoImage(dataUrl) {
 }
 
 async function extractPoWithAI(dataUrl) {
-  var apiKey = getApiKey();
-  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error', 'plantsOutStatus'); return; }
   showStatus('Reading all rows from form — please wait...', 'info', 'plantsOutStatus');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
+    var res = await fetch('/api/extract', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT WHATSOEVER.\\n\\nThis is a SOWN Plants Out distribution record book — a physical notebook photographed from above. The book is open to a double page spread. There is a SPINE/BINDING running vertically down the CENTRE of the image which may obscure some column values.\\n\\nThe column headers are printed in coloured bands at the TOP of the page in this exact left-to-right order:\\n1. DATE — handwritten dates like 16/5/26, 20.5.26. Normalise to DD/MM/YYYY.\\n2. M-ship No. — 3-4 digit membership number like 1551, 8653, 3099\\n3. NAME — ONE volunteer name per row e.g. Chris Reid, Nick Lobbe, V Mills\\n4. No. Lomandra — INTEGER. Left half of double-page (before spine)\\n5. No. Other species — INTEGER. May be near/across the spine\\n6. Total no. tubes — INTEGER total plants\\n7. PLANTING SITE — full address on the RIGHT half of the double page\\n\\nCRITICAL RULES:\\n- ONE ROW = ONE PERSON. Never combine two names into one row.\\n- Each line with a date and name is a SEPARATE row — even if values seem close together\\n- The spine in the middle may hide some numbers — use null for hidden/unclear values\\n- DO NOT extract the header example row (Joe Bloggs, 9876)\\n- DO NOT extract PAGE TOTALS rows\\n- Lomandra and Other species are DIFFERENT columns — read independently\\n- A dash (—) in a number column means null/blank\\n- Copy the FULL planting site without truncating\\n- Return ONLY valid JSON array:\\n[{"date":"","membership_number":"","name":"","no_lomandra":null,"no_other_species":null,"total_plants":null,"planting_site":""}]' }
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT WHATSOEVER.\\n\\nThis is a SOWN Plants Out distribution record book — a physical notebook photographed from above. The book is open to a double page spread. There is a SPINE/BINDING running vertically down the CENTRE of the image which may obscure some column values.\\n\\nThe column headers are printed in coloured bands at the TOP of the page in this exact left-to-right order:\\n1. DATE — handwritten dates like 16/5/26, 20.5.26. Normalise to DD/MM/YYYY.\\n2. M-ship No. — 3-4 digit membership number like 1551, 8653, 3099\\n3. NAME — ONE volunteer name per row e.g. Chris Reid, Nick Lobbe, V Mills\\n4. No. Lomandra — INTEGER. Left half of double-page (before spine)\\n5. No. Other species — INTEGER. May be near/across the spine\\n6. Total no. tubes — INTEGER total plants\\n7. PLANTING SITE — full address on the RIGHT half of the double page\\n\\nCRITICAL RULES:\\n- ONE ROW = ONE PERSON. Never combine two names into one row.\\n- Each line with a date and name is a SEPARATE row\\n- The spine in the middle may hide some numbers — use null for hidden/unclear values\\n- DO NOT extract the header example row (Joe Bloggs, 9876)\\n- DO NOT extract PAGE TOTALS rows\\n- Lomandra and Other species are DIFFERENT columns\\n- A dash (—) in a number column means null\\n- Copy the FULL planting site without truncating\\n\\nFor each field also include a confidence score: "high" (clearly legible), "medium" (somewhat unclear), or "low" (hard to read, guessed, or obscured).\\n\\nReturn ONLY valid JSON array:\\n[{"date":"","date_conf":"high","membership_number":"","membership_number_conf":"high","name":"","name_conf":"high","no_lomandra":null,"no_lomandra_conf":"high","no_other_species":null,"no_other_species_conf":"high","total_plants":null,"total_plants_conf":"high","planting_site":"","planting_site_conf":"high"}]' }
         ]}]
       })
     });
@@ -1297,13 +1300,13 @@ function addPoRowToTable(row, i) {
   var tr = document.createElement('tr');
   tr.innerHTML =
     '<td class="row-num">' + (i+1) + '</td>' +
-    '<td><input type="text" value="' + esc(row.date) + '" placeholder="DD/MM/YYYY" class="narrow"></td>' +
-    '<td><input type="text" value="' + esc(row.membership_number) + '" placeholder="—" class="narrow"></td>' +
-    '<td><input type="text" value="' + esc(row.name) + '" placeholder="Name" style="min-width:160px"></td>' +
-    '<td><input type="number" value="' + (row.no_lomandra != null ? row.no_lomandra : '') + '" placeholder="0" class="narrow" min="0"></td>' +
-    '<td><input type="number" value="' + (row.no_other_species != null ? row.no_other_species : '') + '" placeholder="0" class="narrow" min="0"></td>' +
-    '<td><input type="number" value="' + (row.total_plants != null ? row.total_plants : '') + '" placeholder="0" class="narrow" min="0"></td>' +
-    '<td><input type="text" value="' + esc(row.planting_site) + '" placeholder="Site name" style="min-width:200px"></td>' +
+    '<td class="' + confClass(row.date_conf) + '"><input type="text" value="' + esc(row.date) + '" placeholder="DD/MM/YYYY" class="narrow"></td>' +
+    '<td class="' + confClass(row.membership_number_conf) + '"><input type="text" value="' + esc(row.membership_number) + '" placeholder="—" class="narrow"></td>' +
+    '<td class="' + confClass(row.name_conf) + '"><input type="text" value="' + esc(row.name) + '" placeholder="Name" style="min-width:160px"></td>' +
+    '<td class="' + confClass(row.no_lomandra_conf) + '"><input type="number" value="' + (row.no_lomandra != null ? row.no_lomandra : '') + '" placeholder="0" class="narrow" min="0"></td>' +
+    '<td class="' + confClass(row.no_other_species_conf) + '"><input type="number" value="' + (row.no_other_species != null ? row.no_other_species : '') + '" placeholder="0" class="narrow" min="0"></td>' +
+    '<td class="' + confClass(row.total_plants_conf) + '"><input type="number" value="' + (row.total_plants != null ? row.total_plants : '') + '" placeholder="0" class="narrow" min="0"></td>' +
+    '<td class="' + confClass(row.planting_site_conf) + '"><input type="text" value="' + esc(row.planting_site) + '" placeholder="Site name" style="min-width:200px"></td>' +
     '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
   tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updatePoRowCount(); });
   tbody.appendChild(tr);
@@ -1481,21 +1484,19 @@ function setSownStep(n) {
 }
 
 async function extractSownWithAI(dataUrl) {
-  var apiKey = getApiKey();
-  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error', 'sownScanStatus'); document.getElementById('apiNotice').style.display = 'flex'; return; }
   showStatus('Reading all rows from book — please wait...', 'info', 'sownScanStatus');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
+    var res = await fetch('/api/extract', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a SOWN (volunteer group) sign in/out book page. It is a handwritten notebook with rows of volunteer entries. The columns are:\n1. Date (e.g. 13.5.26, 20/5/26, 13-5-26)\n2. Name (full name, handwritten)\n3. Start time (e.g. 9:00, 8:30, 9)\n4. Finish time (e.g. 12:00, 3:30, 11)\n5. Total hours (e.g. 3, 2.5, 3.75, may use fractions like 3½ - convert to decimal)\n\nRules:\n- Extract EVERY row with a name written in it\n- Read handwriting carefully\n- Convert hour fractions to decimals (½=0.5, ¼=0.25, ¾=0.75)\n- Use empty string for any blank field\n- total_hours must be a number or null\n- Return ONLY valid JSON array starting with [ and ending with ]:\n[{"date":"","name":"","start_time":"","finish_time":"","total_hours":null}]' }
+          { type: 'text', text: 'OUTPUT ONLY A JSON ARRAY. NO OTHER TEXT. DO NOT SAY ANYTHING BEFORE OR AFTER THE JSON.\n\nThis is a SOWN (volunteer group) sign in/out book page. Handwritten notebook with rows of volunteer entries. Columns:\n1. Date (e.g. 13.5.26, 20/5/26)\n2. Name (full name, handwritten)\n3. Start time (e.g. 9:00, 8:30)\n4. Finish time (e.g. 12:00, 3:30)\n5. Total hours (convert fractions to decimal: ½=0.5, ¼=0.25, ¾=0.75)\n\nFor each field include a confidence score: "high" (clearly legible), "medium" (somewhat unclear), or "low" (hard to read or guessed).\n\nExtract EVERY row with a name. Return ONLY valid JSON array:\n[{"date":"","date_conf":"high","name":"","name_conf":"high","start_time":"","start_time_conf":"high","finish_time":"","finish_time_conf":"high","total_hours":null,"total_hours_conf":"high"}]' }
         ]}]
       })
     });
@@ -1533,11 +1534,11 @@ function addSownRowToTable(row, i) {
   var tr = document.createElement('tr');
   tr.innerHTML =
     '<td class="row-num">' + (i+1) + '</td>' +
-    '<td><input type="text" value="' + esc(normaliseDate(row.date)) + '" placeholder="e.g. 20/05/2026" class="narrow"></td>' +
-    '<td><input type="text" value="' + esc(row.name) + '" placeholder="Full name" style="min-width:160px"></td>' +
-    '<td><input type="text" value="' + esc(row.start_time) + '" placeholder="e.g. 9:00" class="narrow"></td>' +
-    '<td><input type="text" value="' + esc(row.finish_time) + '" placeholder="e.g. 12:00" class="narrow"></td>' +
-    '<td><input type="number" value="' + (row.total_hours != null ? row.total_hours : '') + '" placeholder="—" class="narrow" step="0.25"></td>' +
+    '<td class="' + confClass(row.date_conf) + '"><input type="text" value="' + esc(normaliseDate(row.date)) + '" placeholder="e.g. 20/05/2026" class="narrow"></td>' +
+    '<td class="' + confClass(row.name_conf) + '"><input type="text" value="' + esc(row.name) + '" placeholder="Full name" style="min-width:160px"></td>' +
+    '<td class="' + confClass(row.start_time_conf) + '"><input type="text" value="' + esc(row.start_time) + '" placeholder="e.g. 9:00" class="narrow"></td>' +
+    '<td class="' + confClass(row.finish_time_conf) + '"><input type="text" value="' + esc(row.finish_time) + '" placeholder="e.g. 12:00" class="narrow"></td>' +
+    '<td class="' + confClass(row.total_hours_conf) + '"><input type="number" value="' + (row.total_hours != null ? row.total_hours : '') + '" placeholder="—" class="narrow" step="0.25"></td>' +
     '<td><button class="del-btn" title="Remove"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
   tr.querySelector('.del-btn').addEventListener('click', function() { tr.remove(); updateSownRowCount(); });
   tbody.appendChild(tr);
