@@ -156,6 +156,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .lb-bar-fill { height: 100%; background: linear-gradient(90deg, #3d7a2b, #7ab648); border-radius: 99px; transition: width 0.4s ease; }
 .lb-hours { font-size: 13px; font-weight: 600; color: var(--green); white-space: nowrap; width: 50px; text-align: right; flex-shrink: 0; }
 
+/* ── CHARTS ── */
+.chart-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+.chart-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+.chart-wrap { width: 100%; overflow-x: auto; }
+.chart-svg { display: block; width: 100%; min-width: 380px; }
+@media (max-width: 700px) { #chartsGrid { grid-template-columns: 1fr !important; } }
+
 /* ── INACTIVITY WARNING MODAL ── */
 #inactivityModal { z-index: 1000; }
 #inactivityModal .modal-box { text-align: center; }
@@ -287,7 +294,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </button>
   </div>
 
-  <!-- API key is now handled server-side via Vercel environment variable -->
+  <div id="apiNotice" class="api-notice" style="display: none;">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <div>
+      <strong>Enter your Anthropic API key to enable AI extraction</strong><br>
+      Stored only in your browser. Get one at <a href="https://console.anthropic.com/" target="_blank" style="color:var(--green)">console.anthropic.com</a>
+      <div class="api-key-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+        <button onclick="saveApiKey()">Save</button>
+      </div>
+    </div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="showTab(&#39;dashboard&#39;)" id="tab-dashboard-btn">
@@ -343,6 +360,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     <div class="card">
       <p class="section-title">🌱 Top 5 members by plants out</p>
       <div id="topMembersPlants"><div class="lb-row" style="padding:6px 0"><span class="lb-rank gold">🥇</span><div><div class="lb-name" style="font-size:13px">#9852 — Nick Lobbe</div></div><div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:100%"></div></div></div><div class="lb-hours">140</div></div><div class="lb-row" style="padding:6px 0"><span class="lb-rank silver">🥈</span><div><div class="lb-name" style="font-size:13px">#2909 — Im a N Clark</div></div><div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:85.71428571428571%"></div></div></div><div class="lb-hours">120</div></div><div class="lb-row" style="padding:6px 0"><span class="lb-rank bronze">🥉</span><div><div class="lb-name" style="font-size:13px">#1836 — V Mills</div></div><div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:64.28571428571429%"></div></div></div><div class="lb-hours">90</div></div><div class="lb-row" style="padding:6px 0"><span class="lb-rank">4.</span><div><div class="lb-name" style="font-size:13px">#8762 — Kei Levine</div></div><div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:50%"></div></div></div><div class="lb-hours">70</div></div><div class="lb-row" style="padding:6px 0"><span class="lb-rank">5.</span><div><div class="lb-name" style="font-size:13px">Nick Snyder</div></div><div class="lb-bar-wrap"><div class="lb-bar-bg"><div class="lb-bar-fill" style="width:42.857142857142854%"></div></div></div><div class="lb-hours">60</div></div></div>
+    </div>
+  </div>
+
+  <div id="chartsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+    <div class="chart-card">
+      <p class="chart-title">📅 Volunteer hours by month</p>
+      <div class="chart-wrap"><div id="hoursChart"></div></div>
+    </div>
+    <div class="chart-card">
+      <p class="chart-title">🌿 Plants out by month</p>
+      <div class="chart-wrap"><div id="plantsChart"></div></div>
     </div>
   </div>
 
@@ -704,7 +732,19 @@ window.addEventListener('load', async function() {
     if (ok) { showApp(); }
     else { sessionStorage.removeItem('sb_token'); sessionStorage.removeItem('sb_refresh'); }
   }
+  var k = localStorage.getItem('anthropic_api_key');
+  if (k) document.getElementById('apiNotice').style.display = 'none';
 });
+
+// ── API KEY ──
+function getApiKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+function saveApiKey() {
+  var k = document.getElementById('apiKeyInput').value.trim();
+  if (!k.startsWith('sk-ant-')) { alert('Invalid key - should start with sk-ant-'); return; }
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('apiNotice').style.display = 'none';
+  alert('API key saved!');
+}
 
 // ── TABS ── (see showTab in dashboard section)
 
@@ -762,13 +802,15 @@ function processImage(dataUrl) {
 
 // ── AI EXTRACTION ──
 async function extractWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error'); document.getElementById('apiNotice').style.display = 'flex'; return; }
   showStatus('Reading all rows from sheet — please wait...', 'info');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('/api/extract', {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
@@ -1066,9 +1108,80 @@ function renderDashboard() {
         '</div>';
     }).join('');
   }
+
+  // ── CHARTS ──
+  renderBarChart('hoursChart', buildMonthlyData(sown, 'hours'), 'hrs', '#3d7a2b', '#7ab648');
+  renderBarChart('plantsChart', buildMonthlyData(plants, 'total'), 'plants', '#2a7a5a', '#48b68a');
 }
 
-function setPlantCard(id, value, sub) {
+function buildMonthlyData(records, valueKey) {
+  var now = new Date();
+  var months = [];
+  for (var i = 11; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: d.toLocaleDateString('en-AU', { month: 'short' }), year: d.getFullYear(), month: d.getMonth(), value: 0 });
+  }
+  records.forEach(function(r) {
+    var d = r.date; if (!d) return;
+    months.forEach(function(m) {
+      if (d.getFullYear() === m.year && d.getMonth() === m.month) m.value += (r[valueKey] || 0);
+    });
+  });
+  if (valueKey === 'hours') months.forEach(function(m) { m.value = Math.round(m.value * 10) / 10; });
+  return months;
+}
+
+function renderBarChart(containerId, data, unit, colorDark, colorLight) {
+  var el = document.getElementById(containerId); if (!el) return;
+  var maxVal = Math.max.apply(null, data.map(function(d) { return d.value; }));
+  var n = data.length;
+  var W = 480, H = 160, pL = 34, pR = 8, pT = 18, pB = 28;
+  var cW = W - pL - pR, cH = H - pT - pB;
+  var slotW = cW / n, barW = Math.max(8, Math.floor(slotW * 0.55));
+  var gradId = containerId + 'G';
+
+  if (maxVal === 0) {
+    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart-svg" xmlns="http://www.w3.org/2000/svg">' +
+      '<text x="' + (W/2) + '" y="' + (H/2) + '" text-anchor="middle" font-size="13" fill="var(--text3)" font-family="system-ui,sans-serif">No data yet</text></svg>';
+    return;
+  }
+
+  // Grid lines + y labels
+  var grid = '', yLbls = '';
+  for (var g = 0; g <= 4; g++) {
+    var yv = maxVal * g / 4;
+    var yp = pT + cH - cH * g / 4;
+    var yl = yv >= 1000 ? (Math.round(yv/100)/10) + 'k' : (Number.isInteger(yv) ? yv : yv.toFixed(1));
+    var dash = g === 0 ? '' : ' stroke-dasharray="3,3"';
+    grid += '<line x1="' + pL + '" y1="' + yp + '" x2="' + (W-pR) + '" y2="' + yp + '" stroke="var(--border)" stroke-width="' + (g===0?'1':'0.5') + '"' + dash + '/>';
+    yLbls += '<text x="' + (pL-4) + '" y="' + (yp+3) + '" text-anchor="end" font-size="9" fill="var(--text3)" font-family="system-ui,sans-serif">' + yl + '</text>';
+  }
+
+  // Bars + x labels
+  var bars = '', xLbls = '';
+  var now = new Date();
+  data.forEach(function(d, i) {
+    var bh = maxVal > 0 ? (d.value / maxVal * cH) : 0;
+    var x = pL + slotW * i + (slotW - barW) / 2;
+    var y = pT + cH - bh;
+    var isCurrent = (d.year === now.getFullYear() && d.month === now.getMonth());
+    var fill = isCurrent ? 'url(#' + gradId + 'A)' : 'url(#' + gradId + ')';
+    if (bh > 0) {
+      bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW + '" height="' + bh.toFixed(1) + '" fill="' + fill + '" rx="3"><title>' + d.label + ' ' + d.year + ': ' + d.value + (unit ? ' ' + unit : '') + '</title></rect>';
+      if (bh > 14) bars += '<text x="' + (x + barW/2).toFixed(1) + '" y="' + (y - 3).toFixed(1) + '" text-anchor="middle" font-size="8" fill="var(--text2)" font-family="system-ui,sans-serif">' + d.value + '</text>';
+    }
+    var lblColor = isCurrent ? colorDark : 'var(--text3)';
+    var lblWeight = isCurrent ? ' font-weight="600"' : '';
+    xLbls += '<text x="' + (x + barW/2).toFixed(1) + '" y="' + (H-6) + '" text-anchor="middle" font-size="9" fill="' + lblColor + '" font-family="system-ui,sans-serif"' + lblWeight + '>' + d.label + '</text>';
+  });
+
+  el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart-svg" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+    '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + colorLight + '"/><stop offset="100%" stop-color="' + colorDark + '"/></linearGradient>' +
+    '<linearGradient id="' + gradId + 'A" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + colorLight + '" stop-opacity="0.9"/><stop offset="100%" stop-color="' + colorDark + '"/></linearGradient>' +
+    '</defs>' +
+    grid + yLbls + bars + xLbls + '</svg>';
+}
   var el = document.getElementById('dv-' + id);
   if (el) el.innerHTML = value + '<span> plants</span>';
   var s = document.getElementById('ds-' + id);
@@ -1132,13 +1245,15 @@ function processPoImage(dataUrl) {
 }
 
 async function extractPoWithAI(dataUrl) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showStatus('No API key set. Enter it above then retake.', 'error', 'plantsOutStatus'); return; }
   showStatus('Reading all rows from form — please wait...', 'info', 'plantsOutStatus');
   var base64 = dataUrl.split(',')[1];
   var mediaType = dataUrl.includes('image/png') ? 'image/png' : 'image/jpeg';
   try {
-    var res = await fetch('/api/extract', {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
